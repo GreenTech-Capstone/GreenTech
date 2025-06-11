@@ -7,7 +7,6 @@ from rest_framework_simplejwt.views import (
 )
 
 router = DefaultRouter()
-router.register(r'sensordata', SensorDataViewSet, basename='sensordata')
 
 urlpatterns = [
     path('', include(router.urls)),

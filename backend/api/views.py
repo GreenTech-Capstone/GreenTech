@@ -1,6 +1,7 @@
+from .serializers import RegisterSerializer, SensorDataSerializer
 from rest_framework import viewsets, permissions
 from .models import SensorData
-from .serializers import SensorDataSerializer
+from .serializers import RegisterSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status

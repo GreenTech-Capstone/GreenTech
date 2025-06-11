@@ -1,74 +1,44 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
 
   const handleRegister = async () => {
     try {
-      const response = await fetch('http://YOUR_LOCAL_IP:8000/api/register/', {
+      const response = await fetch('http://127.0.0.1:8000/api/register/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
       });
-
       const data = await response.json();
       if (response.ok) {
-        Alert.alert('Success', 'Registration successful!');
+        setMessage('Registered successfully. Go to login.');
         navigation.navigate('Login');
       } else {
-        Alert.alert('Registration Failed', JSON.stringify(data));
+        setMessage(data.username || data.email || data.password || 'Registration failed');
       }
     } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Something went wrong!');
+      setMessage('Error connecting to server');
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Register</Text>
-      <TextInput
-        placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.link}>Already have an account? Log in</Text>
-      </TouchableOpacity>
+      <TextInput placeholder="Username" value={username} onChangeText={setUsername} style={styles.input} />
+      <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} />
+      <TextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
+      <Button title="Register" onPress={handleRegister} />
+      <Text style={styles.message}>{message}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  title: { fontSize: 28, textAlign: 'center', marginBottom: 20, fontFamily: 'Times New Roman' },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 12, marginVertical: 10, borderRadius: 6 },
-  button: { backgroundColor: '#0a8754', padding: 15, borderRadius: 8, marginTop: 10 },
-  buttonText: { color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: 'bold' },
-  link: { marginTop: 15, textAlign: 'center', color: '#0a8754' },
+  container: { padding: 20 },
+  input: { marginBottom: 10, borderWidth: 1, padding: 8, borderRadius: 4 },
+  message: { marginTop: 10, color: 'green' },
 });
