@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import Dashboard from './screens/Dashboard';
@@ -12,6 +13,7 @@ import Alerts from './screens/Alerts';
 import History from './screens/History';
 import Range from './screens/Range';
 
+// Keep splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
 
 const Stack = createNativeStackNavigator();
@@ -22,12 +24,12 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
+        // ✅ Load your custom font
         await Font.loadAsync({
-          'Roboto': require('native-base/Fonts/Roboto.ttf'),
-          'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
+          TimesNewRoman: require('./assets/fonts/times-new-roman.ttf'), // Ensure this file exists
         });
       } catch (e) {
-        console.warn(e);
+        console.warn('Font loading error:', e);
       } finally {
         setAppIsReady(true);
       }
@@ -37,7 +39,9 @@ export default function App() {
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
-    if (appIsReady) await SplashScreen.hideAsync();
+    if (appIsReady) {
+      await SplashScreen.hideAsync();
+    }
   }, [appIsReady]);
 
   if (!appIsReady) return null;
