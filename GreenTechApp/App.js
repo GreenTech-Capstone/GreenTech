@@ -4,6 +4,7 @@ import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+// Import your screens
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import Dashboard from './screens/Dashboard';
@@ -24,9 +25,9 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
-        // ✅ Load your custom font
+        // Load custom font
         await Font.loadAsync({
-          TimesNewRoman: require('./assets/fonts/times-new-roman.ttf'), // Ensure this file exists
+          TimesNewRoman: require('./assets/fonts/times-new-roman.ttf'), // Make sure this file exists
         });
       } catch (e) {
         console.warn('Font loading error:', e);
@@ -49,14 +50,93 @@ export default function App() {
   return (
     <NavigationContainer onReady={onLayoutRootView}>
       <Stack.Navigator initialRouteName="GetStarted">
-        <Stack.Screen name="GetStarted" component={GetStarted} />
-        <Stack.Screen name="AuthScreen" component={AuthScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Dashboard" component={Dashboard} />
-        <Stack.Screen name="Alerts" component={Alerts} />
-        <Stack.Screen name="History" component={History} />
-        <Stack.Screen name="Range" component={Range} />
+        <Stack.Screen
+          name="GetStarted"
+          component={GetStarted}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="AuthScreen"
+          component={AuthScreen}
+          options={{
+            headerTransparent: true,
+            headerTitle: '',
+            headerBackTitleVisible: false,
+            headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{
+            title: 'Login',
+            headerStyle: { backgroundColor: '#dbf7c5' },
+            headerTintColor: '#05542f',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontFamily: 'TimesNewRoman',
+            },
+          }}
+        />
+        <Stack.Screen
+          name="Register"
+          component={RegisterScreen}
+          options={{
+            title: 'Register',
+            headerStyle: { backgroundColor: '#dbf7c5' },
+            headerTintColor: '#05542f',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontFamily: 'TimesNewRoman',
+            },
+          }}
+        />
+        <Stack.Screen
+          name="Dashboard"
+          component={Dashboard}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="Alerts"
+          component={Alerts}
+          options={{
+            title: 'Alerts',
+            headerStyle: { backgroundColor: '#dbf7c5' },
+            headerTintColor: '#05542f',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontFamily: 'TimesNewRoman',
+            },
+          }}
+        />
+        <Stack.Screen
+          name="History"
+          component={History}
+          options={{
+            title: 'History',
+            headerStyle: { backgroundColor: '#dbf7c5' },
+            headerTintColor: '#05542f',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontFamily: 'TimesNewRoman',
+            },
+          }}
+        />
+        <Stack.Screen
+          name="Range"
+          component={Range}
+          options={{
+            title: 'Range',
+            headerStyle: { backgroundColor: '#dbf7c5' },
+            headerTintColor: '#05542f',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontFamily: 'TimesNewRoman',
+            },
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
