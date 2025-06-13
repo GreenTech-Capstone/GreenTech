@@ -1,37 +1,26 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, ImageBackground } from 'react-native';
 
 export default function GetStarted({ navigation }) {
   return (
     <ImageBackground
-      source={require('../assets/background.png')} // ✅ make sure the file exists
+      source={require('../assets/background.png')}
       style={styles.background}
       resizeMode="cover"
     >
-      <View style={styles.overlay}>
+      <View style={styles.container}>
+        <Text style={styles.welcomeText}>WELCOME!</Text>
         <Image
-          source={require('../assets/logo.png')} // ✅ make sure the file exists
+          source={require('../assets/logo.png')}
           style={styles.logo}
+          resizeMode="contain"
         />
-
-        <Text style={styles.title}>Welcome to GreenTech</Text>
-        <Text style={styles.subtitle}>Grow Smart. Monitor Anywhere.</Text>
-
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => navigation.navigate('Login')}
-          >
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.registerButton]}
-            onPress={() => navigation.navigate('Register')}
-          >
-            <Text style={styles.buttonText}>Register</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.getStartedButton}
+          onPress={() => navigation.navigate('AuthScreen')}
+        >
+          <Text style={styles.buttonText}>Get Started</Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -40,54 +29,35 @@ export default function GetStarted({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    justifyContent: 'center',
+    width: '100%',
+    height: '100%',
   },
-  overlay: {
+  container: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+  },
+  welcomeText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#006400',
+    marginBottom: 15,
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 180,
+    height: 180,
     marginBottom: 30,
-    resizeMode: 'contain',
   },
-  title: {
-    fontSize: 28,
-    fontFamily: 'Times New Roman',
-    color: '#006400',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 16,
-    fontFamily: 'Times New Roman',
-    color: '#333',
-    marginBottom: 40,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  button: {
+  getStartedButton: {
     backgroundColor: '#006400',
     paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 8,
-    marginBottom: 15,
-    width: '80%',
-  },
-  registerButton: {
-    backgroundColor: '#228B22',
+    paddingHorizontal: 30,
+    borderRadius: 10,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontFamily: 'Times New Roman',
-    textAlign: 'center',
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
