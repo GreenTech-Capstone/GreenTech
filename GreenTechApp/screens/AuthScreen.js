@@ -72,12 +72,12 @@ const styles = StyleSheet.create({
     height: 100,
     position: 'absolute',
     left: 30,
-    bottom: 275, // adjust to stick just above login button
+    bottom: 305, // adjust to stick just above login button
     zIndex: 1,
   },
   button: {
     backgroundColor: '#dbf7c5',
-    paddingVertical: 12,
+    paddingVertical: 20,
     paddingHorizontal: 60,
     borderRadius: 12,
     marginTop: 25,
