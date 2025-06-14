@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ImageBackground,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -9,15 +21,15 @@ export default function RegisterScreen({ navigation }) {
 
   const handleRegister = async () => {
     try {
-      const response = await fetch('http://10.0.3.25:8000/api/register/', {
+      const response = await fetch('http://10.0.3.84:8000/api/register/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
       });
       const data = await response.json();
       if (response.ok) {
-        setMessage('Registered successfully. Go to login.');
-        navigation.navigate('Login');
+        setMessage('Registered successfully. Redirecting...');
+        navigation.navigate('Dashboard'); // Navigate to Dashboard directly
       } else {
         setMessage(data.username || data.email || data.password || 'Registration failed');
       }
@@ -27,18 +39,129 @@ export default function RegisterScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <TextInput placeholder="Username" value={username} onChangeText={setUsername} style={styles.input} />
-      <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} />
-      <TextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
-      <Button title="Register" onPress={handleRegister} />
-      <Text style={styles.message}>{message}</Text>
-    </View>
+    <ImageBackground
+      source={require('../assets/authscreen.png')}
+      style={styles.background}
+      resizeMode="cover"
+    >
+      <KeyboardAvoidingView
+        style={styles.avoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <Image
+                source={require('../assets/logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+              <Text style={styles.welcome}>Create Account</Text>
+            </View>
+
+            <View style={styles.form}>
+              <Image
+                source={require('../assets/leaves.png')}
+                style={styles.leaf}
+                resizeMode="contain"
+              />
+
+              <TextInput
+                placeholder="Username"
+                value={username}
+                onChangeText={setUsername}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.input}
+              />
+              <TextInput
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                style={styles.input}
+              />
+
+              <TouchableOpacity style={styles.button} onPress={handleRegister}>
+                <Text style={styles.buttonText}>REGISTER</Text>
+              </TouchableOpacity>
+
+              {message !== '' && <Text style={styles.message}>{message}</Text>}
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  input: { marginBottom: 10, borderWidth: 1, padding: 8, borderRadius: 4 },
-  message: { marginTop: 10, color: 'green' },
+  background: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
+  avoidingView: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 90,
+  },
+  header: {
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginTop: -20,
+  },
+  welcome: {
+    fontSize: 36,
+    fontWeight: 'bold',
+    marginTop: -15,
+    color: '#05542f',
+  },
+  form: {
+    width: '75%',
+    alignItems: 'center',
+    marginTop: -10,
+  },
+  leaf: {
+    width: 100,
+    height: 100,
+    marginBottom: -49,
+    left: -120,
+  },
+  input: {
+    backgroundColor: '#dbf7c5',
+    width: '100%',
+    padding: 12,
+    borderRadius: 10,
+    marginVertical: 8,
+  },
+  button: {
+    backgroundColor: '#dbf7c5',
+    paddingVertical: 10,
+    borderRadius: 18,
+    width: '60%',
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  buttonText: {
+    color: '#05542f',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  message: {
+    marginTop: 10,
+    color: 'red',
+  },
 });

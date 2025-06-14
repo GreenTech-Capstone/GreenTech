@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   welcomeText: {
-    fontSize: 28,
+    fontSize: 50,
     fontWeight: 'bold',
     color: '#006400',
     marginBottom: 15,
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#006400',
     paddingVertical: 12,
     paddingHorizontal: 30,
-    borderRadius: 10,
+    borderRadius: 15,
   },
   buttonText: {
     color: 'white',

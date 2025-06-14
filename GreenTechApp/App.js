@@ -13,6 +13,7 @@ import AuthScreen from './screens/AuthScreen';
 import Alerts from './screens/Alerts';
 import History from './screens/History';
 import Range from './screens/Range';
+import Notifications from './screens/Notifications';
 
 // Keep splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -64,31 +65,25 @@ export default function App() {
             headerBackTitleVisible: false,
             headerTintColor: '#fff',
           }}
-        />
-        <Stack.Screen
+          />
+          <Stack.Screen
           name="Login"
           component={LoginScreen}
           options={{
-            title: 'Login',
-            headerStyle: { backgroundColor: '#dbf7c5' },
-            headerTintColor: '#05542f',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-              fontFamily: 'TimesNewRoman',
-            },
+            headerTransparent: true,
+            headerTitle: '',
+            headerBackTitleVisible: false,
+            headerTintColor: '#fff',
           }}
         />
         <Stack.Screen
           name="Register"
           component={RegisterScreen}
           options={{
-            title: 'Register',
-            headerStyle: { backgroundColor: '#dbf7c5' },
-            headerTintColor: '#05542f',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-              fontFamily: 'TimesNewRoman',
-            },
+            headerTransparent: true,
+            headerTitle: '',
+            headerBackTitleVisible: false,
+            headerTintColor: '#fff',
           }}
         />
         <Stack.Screen
@@ -135,6 +130,16 @@ export default function App() {
               fontWeight: 'bold',
               fontFamily: 'TimesNewRoman',
             },
+          }}
+        />
+        <Stack.Screen
+          name="Notifications"
+          component={Notifications}
+          options={{
+            headerTransparent: true,
+            headerTitle: '',
+            headerBackTitleVisible: false,
+            headerTintColor: '#05542f',
           }}
         />
       </Stack.Navigator>
