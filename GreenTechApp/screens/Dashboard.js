@@ -14,11 +14,13 @@ import {
   UIManager,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import SideMenu from './SideMenu';
 
 export default function Dashboard({ navigation }) {
   const [visibleMenu, setVisibleMenu] = useState(null);
   const [search, setSearch] = useState('');
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [menuVisible, setMenuVisible] = useState(false);
 
   const parameters = [
     { id: 1, name: 'Air Temp', value: '26°C', icon: require('../assets/air.png') },
@@ -86,7 +88,16 @@ export default function Dashboard({ navigation }) {
 
       {visibleMenu !== null && (
         <Pressable style={styles.overlay} onPress={closeMenu}>
-          <View style={[styles.menu, { position: 'absolute', top: menuPosition.top + 5, left: menuPosition.left - 120 }]}>
+          <View
+            style={[
+              styles.menu,
+              {
+                position: 'absolute',
+                top: menuPosition.top + 5,
+                left: menuPosition.left - 120,
+              },
+            ]}
+          >
             <Pressable
               style={styles.menuBox}
               onPress={() => {
@@ -121,18 +132,27 @@ export default function Dashboard({ navigation }) {
       )}
 
       <View style={styles.bottomNav}>
-        <TouchableOpacity onPress={() => console.log('Menu')}>
-          <MaterialIcons name="menu" size={32} color="#05542f" />
-        </TouchableOpacity>
+        <View style={styles.navWrapper}>
+          <TouchableOpacity onPress={() => setMenuVisible(true)}>
+            <MaterialIcons name="menu" size={32} color="#05542f" />
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => console.log('Home')}>
-          <MaterialIcons name="home" size={32} color="#05542f" />
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Dashboard')}>
+            <MaterialIcons name="home" size={32} color="#05542f" />
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
-          <MaterialIcons name="notifications" size={32} color="#05542f" />
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+            <MaterialIcons name="notifications" size={32} color="#05542f" />
+          </TouchableOpacity>
+        </View>
       </View>
+
+      <SideMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        username="USERNAME"
+        navigation={navigation}
+      />
     </ImageBackground>
   );
 }
@@ -228,12 +248,16 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     position: 'absolute',
-    bottom: 50,
+    bottom: 20,
     left: 0,
     right: 0,
-    paddingHorizontal: 40,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  navWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingVertical: 35,
+    paddingHorizontal: 30,
   },
 });

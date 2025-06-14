@@ -14,6 +14,9 @@ import Alerts from './screens/Alerts';
 import History from './screens/History';
 import Range from './screens/Range';
 import Notifications from './screens/Notifications';
+import Profile from './screens/Profile'; // ✅ Add this
+import ChangePassword from './screens/ChangePassword'; // ✅ Add this
+import About from './screens/About'; // ✅ Add this
 
 // Keep splash screen visible while fonts load
 SplashScreen.preventAutoHideAsync();
@@ -28,7 +31,7 @@ export default function App() {
       try {
         // Load custom font
         await Font.loadAsync({
-          TimesNewRoman: require('./assets/fonts/times-new-roman.ttf'), // Make sure this file exists
+          TimesNewRoman: require('./assets/fonts/times-new-roman.ttf'),
         });
       } catch (e) {
         console.warn('Font loading error:', e);
@@ -65,8 +68,8 @@ export default function App() {
             headerBackTitleVisible: false,
             headerTintColor: '#fff',
           }}
-          />
-          <Stack.Screen
+        />
+        <Stack.Screen
           name="Login"
           component={LoginScreen}
           options={{
@@ -89,9 +92,7 @@ export default function App() {
         <Stack.Screen
           name="Dashboard"
           component={Dashboard}
-          options={{
-            headerShown: false,
-          }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Alerts"
@@ -140,6 +141,45 @@ export default function App() {
             headerTitle: '',
             headerBackTitleVisible: false,
             headerTintColor: '#05542f',
+          }}
+        />
+        <Stack.Screen
+          name="Profile"
+          component={Profile}
+          options={{
+            title: 'Profile Info',
+            headerStyle: { backgroundColor: '#dbf7c5' },
+            headerTintColor: '#05542f',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontFamily: 'TimesNewRoman',
+            },
+          }}
+        />
+        <Stack.Screen
+          name="ChangePassword"
+          component={ChangePassword}
+          options={{
+            title: 'Change Password',
+            headerStyle: { backgroundColor: '#dbf7c5' },
+            headerTintColor: '#05542f',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontFamily: 'TimesNewRoman',
+            },
+          }}
+        />
+        <Stack.Screen
+          name="About"
+          component={About}
+          options={{
+            title: 'About',
+            headerStyle: { backgroundColor: '#dbf7c5' },
+            headerTintColor: '#05542f',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+              fontFamily: 'TimesNewRoman',
+            },
           }}
         />
       </Stack.Navigator>
