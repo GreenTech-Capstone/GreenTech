@@ -13,6 +13,7 @@ import {
   Keyboard,
 } from 'react-native';
 import Checkbox from 'expo-checkbox';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -30,6 +31,8 @@ export default function LoginScreen({ navigation }) {
       const data = await response.json();
       if (response.ok) {
         setMessage(data.message);
+        // ✅ Save username for SideMenu
+        await AsyncStorage.setItem('username', username);
         navigation.navigate('Dashboard');
       } else {
         setMessage(data.error || 'Login failed');
@@ -51,7 +54,6 @@ export default function LoginScreen({ navigation }) {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.container}>
-            {/* Top Logo and Welcome */}
             <View style={styles.header}>
               <Image
                 source={require('../assets/logo.png')}
@@ -61,7 +63,6 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.welcome}>Welcome Back</Text>
             </View>
 
-            {/* Form */}
             <View style={styles.form}>
               <TextInput
                 placeholder="Username"
@@ -98,7 +99,6 @@ export default function LoginScreen({ navigation }) {
               {message !== '' && <Text style={styles.message}>{message}</Text>}
             </View>
 
-            {/* Decorative Leaf */}
             <Image
               source={require('../assets/leaves.png')}
               style={styles.leaf}
