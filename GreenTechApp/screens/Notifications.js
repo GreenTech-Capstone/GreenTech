@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,9 +6,14 @@ import {
   ScrollView,
   Image,
   ImageBackground,
+  TouchableOpacity,
 } from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
+import SideMenu from './SideMenu'; // Ensure SideMenu is in same directory
 
-export default function Notifications() {
+export default function Notifications({ navigation }) {
+  const [menuVisible, setMenuVisible] = useState(false);
+
   const alerts = [
     {
       id: 1,
@@ -47,16 +52,21 @@ export default function Notifications() {
     },
   ];
 
-  const getStatusStyle = (status) => {
+  const getStatusElement = (status) => {
     switch (status) {
       case 'warning':
-        return styles.yellowCircle;
+        return <View style={styles.yellowCircle} />;
       case 'alert':
-        return styles.redCircle;
+        return <View style={styles.redCircle} />;
       case 'danger':
-        return styles.dangerCircle;
+        return (
+          <Image
+            source={require('../assets/dangericon.png')}
+            style={styles.dangerIcon}
+          />
+        );
       default:
-        return styles.grayCircle;
+        return <View style={styles.grayCircle} />;
     }
   };
 
@@ -80,7 +90,7 @@ export default function Notifications() {
           {alerts.map((alert) => (
             <View key={alert.id} style={styles.alertCard}>
               <View style={styles.statusIconWrapper}>
-                <View style={getStatusStyle(alert.status)} />
+                {getStatusElement(alert.status)}
               </View>
               <View style={styles.alertContent}>
                 <Text style={styles.paramName}>{alert.param}</Text>
@@ -97,6 +107,38 @@ export default function Notifications() {
           ))}
         </ScrollView>
       </View>
+
+      {/* Bottom Navigation Bar */}
+      <View style={styles.bottomNav}>
+        <View style={styles.navWrapper}>
+          <TouchableOpacity onPress={() => setMenuVisible(true)}>
+            <MaterialIcons name="menu" size={32} color="#05542f" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() =>
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Dashboard' }],
+              })
+            }
+          >
+            <MaterialIcons name="home" size={32} color="#05542f" />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+            <MaterialIcons name="notifications" size={32} color="#05542f" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Slide-up Menu Modal */}
+      <SideMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        username="USERNAME"
+        navigation={navigation}
+      />
     </ImageBackground>
   );
 }
@@ -129,8 +171,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#c6e4af',
     borderRadius: 20,
     paddingTop: 20,
-    paddingBottom: 10,
-    paddingHorizontal: 10,
+    paddingBottom: 1,
+    paddingHorizontal: 20,
     position: 'relative',
   },
   leafIcon: {
@@ -152,7 +194,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   statusIconWrapper: {
-    width: 30,
+    width: 20,
     alignItems: 'center',
     justifyContent: 'flex-start',
   },
@@ -160,7 +202,7 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 8,
-    backgroundColor: '#FF4C4C',
+    backgroundColor: '#cf3107',
     marginTop: 4,
   },
   yellowCircle: {
@@ -170,12 +212,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFD700',
     marginTop: 4,
   },
-  dangerCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#8B0000',
-    marginTop: 4,
+  dangerIcon: {
+    width: 18,
+    height: 18,
+    marginTop: 2,
   },
   grayCircle: {
     width: 16,
@@ -216,5 +256,20 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     flex: 1,
     flexWrap: 'wrap',
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: -10,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  navWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: 380,
+    paddingVertical: 50,
+    paddingHorizontal: 50,
+    elevation: 5,
   },
 });
