@@ -12,6 +12,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -29,7 +30,9 @@ export default function RegisterScreen({ navigation }) {
       const data = await response.json();
       if (response.ok) {
         setMessage('Registered successfully. Redirecting...');
-        navigation.navigate('Dashboard'); // Navigate to Dashboard directly
+        // ✅ Save username for SideMenu
+        await AsyncStorage.setItem('username', username);
+        navigation.navigate('Dashboard');
       } else {
         setMessage(data.username || data.email || data.password || 'Registration failed');
       }
