@@ -1,7 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, ImageBackground, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ImageBackground,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import { MaterialIcons } from '@expo/vector-icons';
 
-export default function Temperature() {
+export default function Range({ navigation }) {
   return (
     <ImageBackground
       source={require('../assets/notifbackground.png')}
@@ -54,6 +63,21 @@ export default function Temperature() {
           <Text style={styles.notes}>  Beyond this, growth stops or plants die.</Text>
         </View>
       </ScrollView>
+
+      {/* Bottom Navigation */}
+      <View style={styles.bottomNav}>
+        <View style={styles.navWrapper}>
+          <TouchableOpacity onPress={() => navigation.navigate('Dashboard')}>
+            <MaterialIcons name="menu" size={32} color="#05542f" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Dashboard')}>
+            <MaterialIcons name="home" size={32} color="#05542f" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+            <MaterialIcons name="notifications" size={32} color="#05542f" />
+          </TouchableOpacity>
+        </View>
+      </View>
     </ImageBackground>
   );
 }
@@ -65,6 +89,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 20,
+    paddingBottom: 100,
   },
   headerContainer: {
     flexDirection: 'row',
@@ -77,7 +102,6 @@ const styles = StyleSheet.create({
     height: 80,
     resizeMode: 'contain',
     marginBottom: -50,
-
   },
   headerText: {
     fontSize: 26,
@@ -113,7 +137,7 @@ const styles = StyleSheet.create({
   notesText: {
     color: '#fff',
     width: '30%',
-    textAlign: 'left', 
+    textAlign: 'left',
     fontWeight: 'bold',
   },
   row: {
@@ -149,5 +173,19 @@ const styles = StyleSheet.create({
     color: '#05542f',
     fontStyle: 'italic',
     textAlign: 'left',
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  navWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    paddingVertical: 35,
+    paddingHorizontal: 30,
   },
 });
