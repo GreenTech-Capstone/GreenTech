@@ -1,36 +1,60 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ImageBackground,
   Image,
-  TextInput,
   TouchableOpacity,
   ScrollView,
-  Modal,
   Pressable,
   findNodeHandle,
   UIManager,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import SideMenu from './SideMenu';
+import { supabase } from './supabase'; // <-- import Supabase
 
 export default function Dashboard({ navigation }) {
   const [visibleMenu, setVisibleMenu] = useState(null);
-  const [search, setSearch] = useState('');
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [menuVisible, setMenuVisible] = useState(false);
-
-  const parameters = [
-    { id: 1, name: 'Air Temp', value: '26°C', icon: require('../assets/air.png') },
-    { id: 2, name: 'Water Temp', value: '22°C', icon: require('../assets/water.png') },
-    { id: 3, name: 'Humidity', value: '60%', icon: require('../assets/humidity.png') },
-    { id: 4, name: 'pH Level', value: '6.2', icon: require('../assets/ph.png') },
-    { id: 5, name: 'Nutrients', value: 'Optimal', icon: require('../assets/nutrients.png') },
-  ];
-
   const iconRefs = useRef({});
+
+  // Example sensor parameters
+  const [parameters, setParameters] = useState([
+    { id: 1, name: 'Air Temp', value: 26, icon: require('../assets/air.png') },
+    { id: 2, name: 'Water Temp', value: 22, icon: require('../assets/water.png') },
+    { id: 3, name: 'Humidity', value: 60, icon: require('../assets/humidity.png') },
+    { id: 4, name: 'pH Level', value: 6.2, icon: require('../assets/ph.png') },
+    { id: 5, name: 'Nutrients', value: 'Optimal', icon: require('../assets/nutrients.png') },
+  ]);
+
+  // Send sensor data to Supabase
+  const sendSensorDataToSupabase = async (sensorData) => {
+    const { data, error } = await supabase
+      .from('sensor_readings')
+      .insert([sensorData]);
+
+    if (error) {
+      console.log('Supabase insert error:', error);
+    } else {
+      console.log('Supabase insert success:', data);
+    }
+  };
+
+  // Example: send parameters to Supabase on mount
+  useEffect(() => {
+    parameters.forEach((param) => {
+      if (typeof param.value === 'number') {
+        sendSensorDataToSupabase({
+          user: 'jhush',
+          parameter: param.name,
+          value: param.value,
+        });
+      }
+    });
+  }, []);
 
   const openMenu = (id) => {
     const node = findNodeHandle(iconRefs.current[id]);
@@ -50,42 +74,35 @@ export default function Dashboard({ navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
-      <View style={styles.searchRow}>
+      {/* Centered GreenTech Logo */}
+      <View style={styles.logoContainer}>
         <Image source={require('../assets/logo.png')} style={styles.logo} />
-        <TextInput
-          placeholder="Search parameter..."
-          value={search}
-          onChangeText={setSearch}
-          style={styles.searchInput}
-          placeholderTextColor="#444"
-        />
+        <Text style={styles.title}>GreenTech</Text>
       </View>
 
+      {/* Parameters Section */}
       <ScrollView contentContainerStyle={styles.container}>
-        {parameters
-          .filter((param) =>
-            param.name.toLowerCase().includes(search.toLowerCase())
-          )
-          .map((param) => (
-            <View key={param.id} style={styles.card}>
-              <View style={styles.leftRow}>
-                <Image source={param.icon} style={styles.paramIcon} />
-                <View>
-                  <Text style={styles.paramName}>{param.name}</Text>
-                  <Text style={styles.paramValue}>{param.value}</Text>
-                </View>
+        {parameters.map((param) => (
+          <View key={param.id} style={styles.card}>
+            <View style={styles.leftRow}>
+              <Image source={param.icon} style={styles.paramIcon} />
+              <View>
+                <Text style={styles.paramName}>{param.name}</Text>
+                <Text style={styles.paramValue}>{param.value}</Text>
               </View>
-
-              <TouchableOpacity
-                ref={(ref) => (iconRefs.current[param.id] = ref)}
-                onPress={() => openMenu(param.id)}
-              >
-                <MaterialIcons name="more-vert" size={28} color="#05542f" />
-              </TouchableOpacity>
             </View>
-          ))}
+
+            <TouchableOpacity
+              ref={(ref) => (iconRefs.current[param.id] = ref)}
+              onPress={() => openMenu(param.id)}
+            >
+              <MaterialIcons name="more-vert" size={28} color="#05542f" />
+            </TouchableOpacity>
+          </View>
+        ))}
       </ScrollView>
 
+      {/* Pop-up Menu */}
       {visibleMenu !== null && (
         <Pressable style={styles.overlay} onPress={closeMenu}>
           <View
@@ -131,6 +148,7 @@ export default function Dashboard({ navigation }) {
         </Pressable>
       )}
 
+      {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
         <View style={styles.navWrapper}>
           <TouchableOpacity onPress={() => setMenuVisible(true)}>
@@ -147,6 +165,7 @@ export default function Dashboard({ navigation }) {
         </View>
       </View>
 
+      {/* Side Menu */}
       <SideMenu
         visible={menuVisible}
         onClose={() => setMenuVisible(false)}
@@ -160,32 +179,27 @@ export default function Dashboard({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: 60,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    marginBottom: 8,
+  },
+  title: {
+    fontSize: 24,
+    color: '#05542f',
+    fontWeight: 'bold',
+    fontFamily: 'Times New Roman',
   },
   container: {
     paddingHorizontal: 20,
     paddingBottom: 100,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  logo: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    backgroundColor: '#dbf7c5',
-    borderRadius: 5,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    fontSize: 16,
-    color: '#06542f',
-    elevation: 10,
+    marginTop: 10,
   },
   card: {
     backgroundColor: '#dbf7c5',
