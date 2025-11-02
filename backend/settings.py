@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-0gich=l=b(n(js$ukkrnctvv8ai$tzrbu1iwjj3r%nwmr&+-wg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.3.25', '10.0.3.84', '10.0.3.201', '10.0.1.154']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.3.25', '10.0.3.84', '10.0.3.201', '10.0.1.154', '.onrender.com']
 
 
 # Application definition
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -134,3 +135,14 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = '/static/'
+
+import dj_database_url
+import os
+
+if 'DATABASE_URL' in os.environ:
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600)
+    }
