@@ -1,5 +1,3 @@
-# api/urls.py
-
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import SensorDataViewSet, RegisterView
@@ -9,7 +7,6 @@ from rest_framework_simplejwt.views import (
 )
 
 router = DefaultRouter()
-router.register(r'sensordata', SensorDataViewSet, basename='sensordata')
 
 urlpatterns = [
     path('', include(router.urls)),
