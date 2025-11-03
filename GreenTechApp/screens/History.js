@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native';
-import { supabase } from './supabase.js'; // adjust path if needed
+import { supabase } from './supabase.js'; // adjust path
 
-export default function History() {
+// Pass `route` to get the parameter key from navigation
+export default function History({ route }) {
+  const { paramKey, paramName } = route.params; // e.g., paramKey='temperature', paramName='Air Temperature'
+
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchSensorData = async () => {
     setLoading(true);
     try {
+      // Fetch only the relevant column + timestamp
       const { data, error } = await supabase
         .from('sensor_readings')
-        .select('id, created_at, temperature, humidity, ph_voltage, ec_voltage, distance_cm, pump_on')
+        .select(`created_at, ${paramKey}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setHistoryData(data || []);
-      console.log('✅ Supabase data fetched:', data);
+      console.log('✅ Supabase data fetched for', paramKey, data);
     } catch (error) {
       console.error('Error fetching sensor data:', error.message);
     } finally {
@@ -27,9 +31,9 @@ export default function History() {
   useEffect(() => {
     fetchSensorData();
 
-    // Optional: real-time subscription
+    // Optional: real-time updates for new rows
     const channel = supabase
-      .channel('sensor_changes')
+      .channel(`sensor_changes_${paramKey}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'sensor_readings' },
@@ -46,31 +50,28 @@ export default function History() {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#006837" />
-        <Text>Loading sensor history...</Text>
+        <Text>Loading {paramName} history...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Sensor History</Text>
+      <Text style={styles.header}>{paramName} History</Text>
       {historyData.length === 0 ? (
-        <Text style={styles.noData}>No sensor data available.</Text>
+        <Text style={styles.noData}>No {paramName} data available.</Text>
       ) : (
         <FlatList
           data={historyData}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.item}>
               <Text style={styles.timestamp}>
                 {new Date(item.created_at).toLocaleString()}
               </Text>
-              <Text>🌡 Temperature: {item.temperature ?? 'N/A'} °C</Text>
-              <Text>💨 Humidity: {item.humidity ?? 'N/A'} %</Text>
-              <Text>🔬 pH Voltage: {item.ph_voltage ?? 'N/A'} V</Text>
-              <Text>⚡ EC Voltage: {item.ec_voltage ?? 'N/A'} V</Text>
-              <Text>📏 Distance: {item.distance_cm ?? 'N/A'} cm</Text>
-              <Text>💧 Pump: {item.pump_on ? 'On' : 'Off'}</Text>
+              <Text>
+                {paramName}: {item[paramKey] ?? 'N/A'}
+              </Text>
             </View>
           )}
         />

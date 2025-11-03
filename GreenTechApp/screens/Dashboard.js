@@ -43,11 +43,8 @@ export default function Dashboard({ navigation }) {
         pump_on: sensorData.pump_on ?? false,
       }]);
 
-    if (error) {
-      console.log('Supabase insert error:', error);
-    } else {
-      console.log('✅ Supabase insert success:', data);
-    }
+    if (error) console.log('Supabase insert error:', error);
+    else console.log('✅ Supabase insert success:', data);
   };
 
   // Fetch latest sensor readings from Supabase
@@ -58,12 +55,9 @@ export default function Dashboard({ navigation }) {
       .order('created_at', { ascending: false })
       .limit(1);
 
-    if (error) {
-      console.log('Error fetching sensor data:', error.message);
-    } else if (data && data.length > 0) {
+    if (error) console.log('Error fetching sensor data:', error.message);
+    else if (data && data.length > 0) {
       const latest = data[0];
-
-      // Update parameter values for display
       setParameters((prev) =>
         prev.map((p) => ({
           ...p,
@@ -72,15 +66,13 @@ export default function Dashboard({ navigation }) {
             : 'N/A',
         }))
       );
-
-      // Send to Supabase (optional: remove if already stored elsewhere)
       sendSensorDataToSupabase(latest);
     }
   };
 
   useEffect(() => {
-    fetchSensorData(); // fetch once on load
-    const interval = setInterval(fetchSensorData, 10000); // refresh every 10s
+    fetchSensorData();
+    const interval = setInterval(fetchSensorData, 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -153,11 +145,14 @@ export default function Dashboard({ navigation }) {
               <Text style={styles.menuItem}>View Alerts</Text>
             </Pressable>
 
+            {/* Updated History navigation: passes parameter key & name */}
             <Pressable
               style={styles.menuBox}
               onPress={() => {
                 closeMenu();
-                navigation.navigate('History');
+                const param = parameters.find(p => p.id === visibleMenu);
+                if (param)
+                  navigation.navigate('History', { paramKey: param.key, paramName: param.name });
               }}
             >
               <Text style={styles.menuItem}>View History</Text>
@@ -205,30 +200,11 @@ export default function Dashboard({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    paddingTop: 60,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 24,
-    color: '#05542f',
-    fontWeight: 'bold',
-    fontFamily: 'Times New Roman',
-  },
-  container: {
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-    marginTop: 10,
-  },
+  background: { flex: 1, paddingTop: 60 },
+  logoContainer: { alignItems: 'center', marginBottom: 30 },
+  logo: { width: 80, height: 80, marginBottom: 8 },
+  title: { fontSize: 24, color: '#05542f', fontWeight: 'bold', fontFamily: 'Times New Roman' },
+  container: { paddingHorizontal: 20, paddingBottom: 100, marginTop: 10 },
   card: {
     backgroundColor: '#dbf7c5',
     borderRadius: 15,
@@ -239,32 +215,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4,
   },
-  leftRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  paramIcon: {
-    width: 40,
-    height: 40,
-    marginRight: 12,
-  },
-  paramName: {
-    fontSize: 18,
-    color: '#05542f',
-    fontWeight: 'bold',
-  },
-  paramValue: {
-    fontSize: 16,
-    color: '#05542f',
-    marginTop: 4,
-  },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
+  leftRow: { flexDirection: 'row', alignItems: 'center' },
+  paramIcon: { width: 40, height: 40, marginRight: 12 },
+  paramName: { fontSize: 18, color: '#05542f', fontWeight: 'bold' },
+  paramValue: { fontSize: 16, color: '#05542f', marginTop: 4 },
+  overlay: { position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 },
   menu: {
     backgroundColor: '#dbf7c5',
     paddingVertical: 10,
@@ -283,23 +238,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     marginBottom: 10,
   },
-  menuItem: {
-    fontSize: 16,
-    color: '#05542f',
-    textAlign: 'center',
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  navWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    paddingVertical: 35,
-    paddingHorizontal: 30,
-  },
+  menuItem: { fontSize: 16, color: '#05542f', textAlign: 'center' },
+  bottomNav: { position: 'absolute', bottom: 20, left: 0, right: 0, alignItems: 'center' },
+  navWrapper: { flexDirection: 'row', justifyContent: 'space-around', width: '100%', paddingVertical: 35, paddingHorizontal: 30 },
 });
