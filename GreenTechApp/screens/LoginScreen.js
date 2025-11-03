@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../config'; // ✅ Use your Render backend URL
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -23,15 +24,16 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch('http://10.0.1.154:8000/api/login/', {
+      const response = await fetch(`${BASE_URL}/api/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
+
       const data = await response.json();
+
       if (response.ok) {
-        setMessage(data.message);
-        // ✅ Save username for SideMenu
+        setMessage('Login successful');
         await AsyncStorage.setItem('username', username);
         navigation.navigate('Dashboard');
       } else {
@@ -112,38 +114,18 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  avoidingView: {
-    flex: 1,
-  },
+  background: { flex: 1, width: '100%', height: '100%' },
+  avoidingView: { flex: 1 },
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 40,
   },
-  header: {
-    alignItems: 'center',
-    marginTop: 30,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-  },
-  welcome: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginTop: 15,
-    color: '#05542f',
-  },
-  form: {
-    width: '85%',
-    alignItems: 'center',
-  },
+  header: { alignItems: 'center', marginTop: 30 },
+  logo: { width: 120, height: 120 },
+  welcome: { fontSize: 36, fontWeight: 'bold', marginTop: 15, color: '#05542f' },
+  form: { width: '85%', alignItems: 'center' },
   input: {
     backgroundColor: '#dbf7c5',
     width: '90%',
@@ -158,18 +140,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 20,
   },
-  rememberContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  rememberText: {
-    marginLeft: 8,
-    color: '#dbf7c5',
-  },
-  forgot: {
-    color: '#dbf7c5',
-    fontWeight: 'bold',
-  },
+  rememberContainer: { flexDirection: 'row', alignItems: 'center' },
+  rememberText: { marginLeft: 8, color: '#dbf7c5' },
+  forgot: { color: '#dbf7c5', fontWeight: 'bold' },
   button: {
     backgroundColor: '#dbf7c5',
     paddingVertical: 14,
@@ -178,20 +151,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-  buttonText: {
-    color: '#05542f',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  leaf: {
-    width: 100,
-    height: 100,
-    marginBottom: -140,
-    bottom: 390,
-    left: -130,
-  },
-  message: {
-    marginTop: 10,
-    color: 'red',
-  },
+  buttonText: { color: '#05542f', fontSize: 16, fontWeight: 'bold' },
+  leaf: { width: 100, height: 100, marginBottom: -140, bottom: 390, left: -130 },
+  message: { marginTop: 10, color: 'red' },
 });

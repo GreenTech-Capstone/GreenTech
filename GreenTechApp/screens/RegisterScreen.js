@@ -13,6 +13,7 @@ import {
   Keyboard,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../config'; // ✅ Use Render backend
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -22,19 +23,22 @@ export default function RegisterScreen({ navigation }) {
 
   const handleRegister = async () => {
     try {
-      const response = await fetch('http://10.0.1.154:8000/api/register/', {
+      const response = await fetch(`${BASE_URL}/api/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password }),
       });
+
       const data = await response.json();
+
       if (response.ok) {
-        setMessage('Registered successfully. Redirecting...');
-        // ✅ Save username for SideMenu
+        setMessage('Registered successfully! Redirecting...');
         await AsyncStorage.setItem('username', username);
         navigation.navigate('Dashboard');
       } else {
-        setMessage(data.username || data.email || data.password || 'Registration failed');
+        setMessage(
+          data.username || data.email || data.password || 'Registration failed'
+        );
       }
     } catch (error) {
       setMessage('Error connecting to server');
@@ -103,46 +107,19 @@ export default function RegisterScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-  },
-  avoidingView: {
-    flex: 1,
-  },
+  background: { flex: 1, width: '100%', height: '100%' },
+  avoidingView: { flex: 1 },
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 90,
   },
-  header: {
-    alignItems: 'center',
-    marginTop: 30,
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    marginTop: -20,
-  },
-  welcome: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    marginTop: -15,
-    color: '#05542f',
-  },
-  form: {
-    width: '75%',
-    alignItems: 'center',
-    marginTop: -10,
-  },
-  leaf: {
-    width: 100,
-    height: 100,
-    marginBottom: -49,
-    left: -120,
-  },
+  header: { alignItems: 'center', marginTop: 30 },
+  logo: { width: 120, height: 120, marginTop: -20 },
+  welcome: { fontSize: 36, fontWeight: 'bold', marginTop: -15, color: '#05542f' },
+  form: { width: '75%', alignItems: 'center', marginTop: -10 },
+  leaf: { width: 100, height: 100, marginBottom: -49, left: -120 },
   input: {
     backgroundColor: '#dbf7c5',
     width: '100%',
@@ -158,13 +135,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 30,
   },
-  buttonText: {
-    color: '#05542f',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  message: {
-    marginTop: 10,
-    color: 'red',
-  },
+  buttonText: { color: '#05542f', fontSize: 20, fontWeight: 'bold' },
+  message: { marginTop: 10, color: 'red' },
 });
