@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import SideMenu from './SideMenu';
-import { supabase } from './supabase'; // <-- import Supabase
+import { supabase } from './supabase'; // Supabase connection
 
 export default function Dashboard({ navigation }) {
   const [visibleMenu, setVisibleMenu] = useState(null);
@@ -21,39 +21,67 @@ export default function Dashboard({ navigation }) {
   const [menuVisible, setMenuVisible] = useState(false);
   const iconRefs = useRef({});
 
-  // Example sensor parameters
+  // Local parameters to display
   const [parameters, setParameters] = useState([
-    { id: 1, name: 'Air Temp', value: 26, icon: require('../assets/air.png') },
-    { id: 2, name: 'Water Temp', value: 22, icon: require('../assets/water.png') },
-    { id: 3, name: 'Humidity', value: 60, icon: require('../assets/humidity.png') },
-    { id: 4, name: 'pH Level', value: 6.2, icon: require('../assets/ph.png') },
-    { id: 5, name: 'Nutrients', value: 'Optimal', icon: require('../assets/nutrients.png') },
+    { id: 1, name: 'Air Temperature', key: 'temperature', icon: require('../assets/air.png') },
+    { id: 2, name: 'Humidity', key: 'humidity', icon: require('../assets/humidity.png') },
+    { id: 3, name: 'Ph Level', key: 'ph_voltage', icon: require('../assets/ph.png') },
+    { id: 4, name: 'Nutrient', key: 'ec_voltage', icon: require('../assets/nutrients.png') },
+    { id: 5, name: 'Distance', key: 'distance_cm', icon: require('../assets/distance.png') },
   ]);
 
   // Send sensor data to Supabase
   const sendSensorDataToSupabase = async (sensorData) => {
     const { data, error } = await supabase
       .from('sensor_readings')
-      .insert([sensorData]);
+      .insert([{
+        temperature: sensorData.temperature,
+        humidity: sensorData.humidity,
+        ph_voltage: sensorData.ph_voltage,
+        ec_voltage: sensorData.ec_voltage,
+        distance_cm: sensorData.distance_cm,
+        pump_on: sensorData.pump_on ?? false,
+      }]);
 
     if (error) {
       console.log('Supabase insert error:', error);
     } else {
-      console.log('Supabase insert success:', data);
+      console.log('✅ Supabase insert success:', data);
     }
   };
 
-  // Example: send parameters to Supabase on mount
+  // Fetch latest sensor readings from Supabase
+  const fetchSensorData = async () => {
+    const { data, error } = await supabase
+      .from('sensor_readings')
+      .select('created_at, temperature, humidity, ph_voltage, ec_voltage, distance_cm, pump_on')
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      console.log('Error fetching sensor data:', error.message);
+    } else if (data && data.length > 0) {
+      const latest = data[0];
+
+      // Update parameter values for display
+      setParameters((prev) =>
+        prev.map((p) => ({
+          ...p,
+          value: latest[p.key] !== null && latest[p.key] !== undefined
+            ? latest[p.key].toString()
+            : 'N/A',
+        }))
+      );
+
+      // Send to Supabase (optional: remove if already stored elsewhere)
+      sendSensorDataToSupabase(latest);
+    }
+  };
+
   useEffect(() => {
-    parameters.forEach((param) => {
-      if (typeof param.value === 'number') {
-        sendSensorDataToSupabase({
-          user: 'jhush',
-          parameter: param.name,
-          value: param.value,
-        });
-      }
-    });
+    fetchSensorData(); // fetch once on load
+    const interval = setInterval(fetchSensorData, 10000); // refresh every 10s
+    return () => clearInterval(interval);
   }, []);
 
   const openMenu = (id) => {
@@ -74,13 +102,13 @@ export default function Dashboard({ navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
-      {/* Centered GreenTech Logo */}
+      {/* Header */}
       <View style={styles.logoContainer}>
         <Image source={require('../assets/logo.png')} style={styles.logo} />
         <Text style={styles.title}>GreenTech</Text>
       </View>
 
-      {/* Parameters Section */}
+      {/* Parameters */}
       <ScrollView contentContainerStyle={styles.container}>
         {parameters.map((param) => (
           <View key={param.id} style={styles.card}>
@@ -88,7 +116,7 @@ export default function Dashboard({ navigation }) {
               <Image source={param.icon} style={styles.paramIcon} />
               <View>
                 <Text style={styles.paramName}>{param.name}</Text>
-                <Text style={styles.paramValue}>{param.value}</Text>
+                <Text style={styles.paramValue}>{param.value || 'Loading...'}</Text>
               </View>
             </View>
 

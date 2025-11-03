@@ -1,0 +1,1 @@
+export const BASE_URL = 'https://greentech-ud0q.onrender.com';
