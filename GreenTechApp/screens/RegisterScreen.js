@@ -11,9 +11,10 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../config'; // ✅ Use Render backend
+import { BASE_URL } from '../config'; // ✅ Your Django backend URL
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -21,7 +22,19 @@ export default function RegisterScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
 
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   const handleRegister = async () => {
+    if (!username || !email || !password) {
+      Alert.alert('Error', 'All fields are required.');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
     try {
       const response = await fetch(`${BASE_URL}/api/register/`, {
         method: 'POST',
@@ -36,9 +49,7 @@ export default function RegisterScreen({ navigation }) {
         await AsyncStorage.setItem('username', username);
         navigation.navigate('Dashboard');
       } else {
-        setMessage(
-          data.username || data.email || data.password || 'Registration failed'
-        );
+        setMessage(data.error || 'Registration failed');
       }
     } catch (error) {
       setMessage('Error connecting to server');
@@ -84,6 +95,8 @@ export default function RegisterScreen({ navigation }) {
                 value={email}
                 onChangeText={setEmail}
                 style={styles.input}
+                keyboardType="email-address"
+                autoCapitalize="none"
               />
               <TextInput
                 placeholder="Password"

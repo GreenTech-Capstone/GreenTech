@@ -1,8 +1,14 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.core.validators import EmailValidator
 from .models import SensorData
 
 class RegisterSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[EmailValidator(message="Enter a valid email address")]
+    )
+
     class Meta:
         model = User
         fields = ('username', 'email', 'password')
@@ -15,6 +21,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password']
         )
         return user
+
 
 class SensorDataSerializer(serializers.ModelSerializer):
     class Meta:

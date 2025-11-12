@@ -27,7 +27,7 @@ export default function Dashboard({ navigation }) {
     { id: 2, name: 'Humidity', key: 'humidity', icon: require('../assets/humidity.png') },
     { id: 3, name: 'Ph Level', key: 'ph_voltage', icon: require('../assets/ph.png') },
     { id: 4, name: 'Nutrient', key: 'ec_voltage', icon: require('../assets/nutrients.png') },
-    { id: 5, name: 'Distance', key: 'distance_cm', icon: require('../assets/distance.png') },
+    { id: 5, name: 'Water Level', key: 'distance_cm', icon: require('../assets/waterlevel.png') },
   ]);
 
   // Send sensor data to Supabase
