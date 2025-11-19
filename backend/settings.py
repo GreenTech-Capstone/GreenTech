@@ -13,7 +13,7 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-dev-key")
 DEBUG = env.bool("DEBUG", default=True)
 
 ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1', '.onrender.com'
+    'localhost', '127.0.0.1', '.onrender.com', 'https://greentech-ud0q.onrender.com'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -79,15 +79,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'wsgi.application'
 
 # ================== DATABASE ==================
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',  # default to PostgreSQL
+        'NAME': env("DB_NAME", default="greentech"),       # local fallback
+        'USER': env("DB_USER", default="postgres"),
+        'PASSWORD': env("DB_PASS", default="postgres"),
+        'HOST': env("DB_HOST", default="localhost"),
+        'PORT': env("DB_PORT", default="5432"),
     }
 }
 
+# Override with Render's DATABASE_URL if provided
 if 'DATABASE_URL' in os.environ:
-    DATABASES = {'default': dj_database_url.config(conn_max_age=600)}
+    DATABASES['default'] = dj_database_url.config(
+        conn_max_age=600,
+        ssl_require=True
+    )
 
 # ================== REST FRAMEWORK ==================
 REST_FRAMEWORK = {
