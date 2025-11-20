@@ -79,24 +79,13 @@ TEMPLATES = [
 WSGI_APPLICATION = 'wsgi.application'
 
 # ================== DATABASE ==================
-
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # default to PostgreSQL
-        'NAME': env("DB_NAME", default="greentech"),       # local fallback
-        'USER': env("DB_USER", default="postgres"),
-        'PASSWORD': env("DB_PASS", default="postgres"),
-        'HOST': env("DB_HOST", default="localhost"),
-        'PORT': env("DB_PORT", default="5432"),
-    }
-}
-
-# Override with Render's DATABASE_URL if provided
-if 'DATABASE_URL' in os.environ:
-    DATABASES['default'] = dj_database_url.config(
+    'default': dj_database_url.parse(
+        "postgresql://jstne_user:TQ9qRxsSwDqEglbpyDjVPSzxGuy2Jq3K@dpg-d0q76d3e5dus73eg23fg-a/jstne",
         conn_max_age=600,
         ssl_require=True
     )
+}
 
 # ================== REST FRAMEWORK ==================
 REST_FRAMEWORK = {
