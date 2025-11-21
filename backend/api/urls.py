@@ -5,6 +5,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+from .views import CustomTokenObtainPairView
 
 router = DefaultRouter()
 # You can register your SensorDataViewSet with router if needed:
