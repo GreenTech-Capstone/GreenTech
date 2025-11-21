@@ -16,4 +16,5 @@ urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('change-password/', ChangePasswordView.as_view(), name='change-password'),  # ✅ New endpoint
+    path('api/login/', CustomTokenObtainPairView.as_view()),
 ]
