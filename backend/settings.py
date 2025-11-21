@@ -126,9 +126,10 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = env("EMAIL_HOST", default="smtp-relay.brevo.com")
 EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-EMAIL_HOST_USER = env("EMAIL_HOST_USER")  # your Brevo SMTP login
+EMAIL_HOST_USER = "9bff26001@smtp-brevo.com"  # your Brevo SMTP login
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")  # your Brevo SMTP key
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = "GreenTech <9bff26001@smtp-brevo.com>"
+EMAIL_HOST_PASSWORD = "YOUR_SMTP_KEY"
 
 # ================== DJANGO-ALLAUTH ==================
 AUTHENTICATION_BACKENDS = (
