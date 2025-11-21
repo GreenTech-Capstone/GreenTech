@@ -80,11 +80,17 @@ WSGI_APPLICATION = 'wsgi.application'
 
 # ================== DATABASE ==================
 DATABASES = {
-    'default': dj_database_url.parse(
-        "postgresql://jstne_user:TQ9qRxsSwDqEglbpyDjVPSzxGuy2Jq3K@dpg-d0q76d3e5dus73eg23fg-a/jstne",
-        conn_max_age=600,
-        ssl_require=True
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'greentech_2ssi',
+        'USER': 'greentech_2ssi_user',
+        'PASSWORD': 'BOPirl7CQOTUhIHThu2g0rpcErwwlOZA',
+        'HOST': 'dpg-d4g0mvqli9vc73cu3r00-a.oregon-postgres.render.com',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
+    }
 }
 
 # ================== REST FRAMEWORK ==================
