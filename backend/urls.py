@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/', include('api.urls')),  # include your app URLs here
     path('accounts/', include('allauth.urls')),  # login, signup, logout
     path('', home),  # root URL
+    path('api/login/', CustomTokenObtainPairView.as_view()),
 
     # Password reset URLs
     path('password-reset/',
