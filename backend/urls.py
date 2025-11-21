@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.http import HttpResponse
+from .views import CustomTokenObtainPairView
 
 # Optional: simple root view to avoid 404
 def home(request):
