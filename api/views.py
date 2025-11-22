@@ -1,67 +1,47 @@
-from .serializers import RegisterSerializer, SensorDataSerializer
-from rest_framework import viewsets, permissions
-from .models import SensorData
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.contrib.auth.password_validation import validate_password
-from rest_framework.exceptions import ValidationError
-
-class SensorDataViewSet(viewsets.ModelViewSet):
-    queryset = SensorData.objects.all().order_by('-timestamp')
-    serializer_class = SensorDataSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        return SensorData.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+from allauth.account.utils import send_email_confirmation
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
 
 class RegisterView(APIView):
-    permission_classes = [AllowAny]
-
     def post(self, request):
-        username = request.data.get('username')
-        email = request.data.get('email')
-        password = request.data.get('password')
+        username = request.data.get("username")
+        email = request.data.get("email")
+        password = request.data.get("password")
 
-        if not username or not email or not password:
-            return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
+        if not email or not username or not password:
+            return Response({"error": "All fields required"}, status=status.HTTP_400_BAD_REQUEST)
 
         if User.objects.filter(username=username).exists():
-            return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            validate_password(password)
-        except ValidationError as e:
-            return Response({'error': e.messages}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(email=email).exists():
+            return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Create inactive user
         user = User.objects.create_user(username=username, email=email, password=password)
-        return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
-
-
-class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-        current_password = request.data.get('current_password')
-        new_password = request.data.get('new_password')
-
-        if not current_password or not new_password:
-            return Response({'error': 'Both current and new passwords are required'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not user.check_password(current_password):
-            return Response({'error': 'Current password is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            validate_password(new_password, user)
-        except ValidationError as e:
-            return Response({'error': e.messages}, status=status.HTTP_400_BAD_REQUEST)
-
-        user.set_password(new_password)
+        user.is_active = False  # Require email verification
         user.save()
-        return Response({'success': 'Password changed successfully'}, status=status.HTTP_200_OK)
+
+        # Send verification email
+        send_email_confirmation(request, user)
+
+        return Response({
+            "message": "Account created. Please check your email to verify."
+        }, status=status.HTTP_201_CREATED)
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        if not self.user.is_active:
+            raise AuthenticationFailed("Email not verified. Please check your inbox.")
+        return data
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
