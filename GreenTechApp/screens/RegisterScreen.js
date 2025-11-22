@@ -1,21 +1,10 @@
-Register
-
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ImageBackground,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Image,
+  KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard,
+  Alert
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { BASE_URL } from '../config'; // ✅ Use Render backend
+import { BASE_URL } from '../config';
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -25,75 +14,52 @@ export default function RegisterScreen({ navigation }) {
 
   const handleRegister = async () => {
     try {
+      console.log("Sending request to backend...");
       const response = await fetch(`${BASE_URL}/api/register/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
         body: JSON.stringify({ username, email, password }),
       });
 
+      console.log("Response status:", response.status);
       const data = await response.json();
+      console.log("Response data:", data);
 
       if (response.ok) {
-        setMessage('Registered successfully! Redirecting...');
-        await AsyncStorage.setItem('username', username);
-        navigation.navigate('Dashboard');
+        Alert.alert("Verify Email", "A verification link has been sent to your inbox.");
+        setUsername('');
+        setEmail('');
+        setPassword('');
+        setMessage("Registered! Check your email to verify your account.");
       } else {
-        setMessage(
-          data.username || data.email || data.password || 'Registration failed'
-        );
+        setMessage(data.error || data.detail || "Registration failed");
       }
     } catch (error) {
-      setMessage('Error connecting to server');
+      console.log("Fetch error:", error);
+      setMessage("Error connecting to server");
     }
   };
 
   return (
-    <ImageBackground
-      source={require('../assets/authscreen.png')}
-      style={styles.background}
-      resizeMode="cover"
-    >
-      <KeyboardAvoidingView
-        style={styles.avoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+    <ImageBackground source={require('../assets/authscreen.png')} style={styles.background} resizeMode="cover">
+      <KeyboardAvoidingView style={styles.avoidingView} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.container}>
+
             <View style={styles.header}>
-              <Image
-                source={require('../assets/logo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
+              <Image source={require('../assets/logo.png')} style={styles.logo} resizeMode="contain" />
               <Text style={styles.welcome}>Create Account</Text>
             </View>
 
             <View style={styles.form}>
-              <Image
-                source={require('../assets/leaves.png')}
-                style={styles.leaf}
-                resizeMode="contain"
-              />
+              <Image source={require('../assets/leaves.png')} style={styles.leaf} resizeMode="contain" />
 
-              <TextInput
-                placeholder="Username"
-                value={username}
-                onChangeText={setUsername}
-                style={styles.input}
-              />
-              <TextInput
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                style={styles.input}
-              />
-              <TextInput
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-                style={styles.input}
-              />
+              <TextInput placeholder="Username" value={username} onChangeText={setUsername} style={styles.input} />
+              <TextInput placeholder="Email" value={email} onChangeText={setEmail} style={styles.input} keyboardType="email-address" />
+              <TextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
 
               <TouchableOpacity style={styles.button} onPress={handleRegister}>
                 <Text style={styles.buttonText}>REGISTER</Text>
@@ -101,6 +67,7 @@ export default function RegisterScreen({ navigation }) {
 
               {message !== '' && <Text style={styles.message}>{message}</Text>}
             </View>
+
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -111,32 +78,14 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: { flex: 1, width: '100%', height: '100%' },
   avoidingView: { flex: 1 },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 90,
-  },
+  container: { flex: 1, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 90 },
   header: { alignItems: 'center', marginTop: 30 },
   logo: { width: 120, height: 120, marginTop: -20 },
   welcome: { fontSize: 36, fontWeight: 'bold', marginTop: -15, color: '#05542f' },
   form: { width: '75%', alignItems: 'center', marginTop: -10 },
   leaf: { width: 100, height: 100, marginBottom: -49, left: -120 },
-  input: {
-    backgroundColor: '#dbf7c5',
-    width: '100%',
-    padding: 12,
-    borderRadius: 10,
-    marginVertical: 8,
-  },
-  button: {
-    backgroundColor: '#dbf7c5',
-    paddingVertical: 10,
-    borderRadius: 18,
-    width: '60%',
-    alignItems: 'center',
-    marginTop: 30,
-  },
+  input: { backgroundColor: '#dbf7c5', width: '100%', padding: 12, borderRadius: 10, marginVertical: 8 },
+  button: { backgroundColor: '#dbf7c5', paddingVertical: 10, borderRadius: 18, width: '60%', alignItems: 'center', marginTop: 30 },
   buttonText: { color: '#05542f', fontSize: 20, fontWeight: 'bold' },
-  message: { marginTop: 10, color: 'red' },
+  message: { marginTop: 10, color: 'red', textAlign: 'center' },
 });

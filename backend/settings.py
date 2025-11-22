@@ -13,11 +13,15 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-dev-key")
 DEBUG = env.bool("DEBUG", default=True)
 
 ALLOWED_HOSTS = [
-    'localhost', '127.0.0.1', '.onrender.com', 'https://greentech-ud0q.onrender.com'
+    'localhost', 
+    '127.0.0.1', 
+    '.onrender.com', 
+    'greentech-ud0q.onrender.com',  # your Render backend
+    '10.0.1.105'  # your local device IP (optional)
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.onrender.com'
+    'https://*.onrender.com',
 ]
 
 # ================== APPS ==================
@@ -55,7 +59,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -118,18 +121,24 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-CORS_ALLOW_ALL_ORIGINS = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ================== CORS ==================
+CORS_ALLOW_ALL_ORIGINS = True  # For testing
+# For production, you can restrict:
+# CORS_ALLOWED_ORIGINS = [
+#     "exp://127.0.0.1:19000",  # Expo Go dev server
+#     "https://greentech-ud0q.onrender.com",
+# ]
 
 # ================== EMAIL CONFIG — BREVO SMTP ==================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = env("EMAIL_HOST", default="smtp-relay.brevo.com")
 EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-EMAIL_HOST_USER = "9bff26001@smtp-brevo.com"  # your Brevo SMTP login
+EMAIL_HOST_USER = "9bff26001@smtp-brevo.com"
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")  # your Brevo SMTP key
 DEFAULT_FROM_EMAIL = "GreenTech <9bff26001@smtp-brevo.com>"
-EMAIL_HOST_PASSWORD = "YOUR_SMTP_KEY"
 
 # ================== DJANGO-ALLAUTH ==================
 AUTHENTICATION_BACKENDS = (
@@ -137,12 +146,10 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
-# Allauth account settings
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'password1*', 'password2*']
+ACCOUNT_SIGNUP_FIELDS = ['username', 'email', 'password1', 'password2']
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 LOGIN_REDIRECT_URL = '/'

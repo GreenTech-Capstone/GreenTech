@@ -4,7 +4,7 @@ import * as Font from 'expo-font';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-// Import your screens
+// Import Screens
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import Dashboard from './screens/Dashboard';
@@ -14,11 +14,11 @@ import Alerts from './screens/Alerts';
 import History from './screens/History';
 import Range from './screens/Range';
 import Notifications from './screens/Notifications';
-import Profile from './screens/Profile'; // ✅ Add this
-import ChangePassword from './screens/ChangePassword'; // ✅ Add this
-import About from './screens/About'; // ✅ Add this
+import Profile from './screens/Profile';
+import ChangePassword from './screens/ChangePassword';
+import About from './screens/About';
 
-// Keep splash screen visible while fonts load
+// Keep splash visible while loading
 SplashScreen.preventAutoHideAsync();
 
 const Stack = createNativeStackNavigator();
@@ -29,7 +29,6 @@ export default function App() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Load custom font
         await Font.loadAsync({
           TimesNewRoman: require('./assets/fonts/times-new-roman.ttf'),
         });
@@ -54,6 +53,8 @@ export default function App() {
   return (
     <NavigationContainer onReady={onLayoutRootView}>
       <Stack.Navigator initialRouteName="GetStarted">
+
+        {/* Start Screens */}
         <Stack.Screen
           name="GetStarted"
           component={GetStarted}
@@ -62,38 +63,29 @@ export default function App() {
         <Stack.Screen
           name="AuthScreen"
           component={AuthScreen}
-          options={{
-            headerTransparent: true,
-            headerTitle: '',
-            headerBackTitleVisible: false,
-            headerTintColor: '#fff',
-          }}
+          options={{ headerShown: false }}
         />
+
+        {/* Auth Screens */}
         <Stack.Screen
           name="Login"
           component={LoginScreen}
-          options={{
-            headerTransparent: true,
-            headerTitle: '',
-            headerBackTitleVisible: false,
-            headerTintColor: '#fff',
-          }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen
           name="Register"
           component={RegisterScreen}
-          options={{
-            headerTransparent: true,
-            headerTitle: '',
-            headerBackTitleVisible: false,
-            headerTintColor: '#fff',
-          }}
+          options={{ headerShown: false }}
         />
+
+        {/* Main Dashboard */}
         <Stack.Screen
           name="Dashboard"
           component={Dashboard}
           options={{ headerShown: false }}
         />
+
+        {/* Parameter Pages */}
         <Stack.Screen
           name="Alerts"
           component={Alerts}
@@ -133,16 +125,15 @@ export default function App() {
             },
           }}
         />
+
+        {/* Other Screens */}
         <Stack.Screen
           name="Notifications"
           component={Notifications}
-          options={{
-            headerTransparent: true,
-            headerTitle: '',
-            headerBackTitleVisible: false,
-            headerTintColor: '#05542f',
-          }}
+          options={{ headerShown: false }}
         />
+
+        {/* Sidebar Menu Screens */}
         <Stack.Screen
           name="Profile"
           component={Profile}
@@ -182,6 +173,7 @@ export default function App() {
             },
           }}
         />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
