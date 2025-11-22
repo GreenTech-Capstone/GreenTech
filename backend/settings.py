@@ -81,6 +81,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wsgi.application'
 
+# Prevent allauth from demanding AccountMiddleware
+ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
+
 # ================== DATABASE ==================
 DATABASES = {
     'default': {
