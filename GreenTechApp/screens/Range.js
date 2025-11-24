@@ -1,191 +1,103 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ImageBackground,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, FlatList, StyleSheet, Image, ImageBackground, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
-export default function Range({ navigation }) {
+// Pass `route` to get the parameter key from navigation
+export default function Range({ navigation, route }) {
+  const { paramKey, paramName } = route?.params || { paramKey: 'temperature', paramName: 'Air Temperature' };
+
+  // Exact ranges for each parameter
+  const rangesData = {
+    temperature: [
+      { level: 'Low', value: '15–18 °C', notes: 'Growth slows', color: 'red' },
+      { level: 'Normal', value: '22–28 °C', notes: 'Best growth', color: 'green' },
+      { level: 'High', value: '30–35 °C', notes: 'Stress, slower growth', color: 'blue' },
+      { level: 'Max', value: '38 °C', notes: 'Leaves may burn', color: 'orange' },
+    ],
+    humidity: [
+      { level: 'Low', value: '40–50 %', notes: 'May cause leaf wilting', color: 'red' },
+      { level: 'Normal', value: '60–70 %', notes: 'Ideal for leaf expansion', color: 'green' },
+      { level: 'High', value: '80–85 %', notes: 'Risk of fungal issues', color: 'blue' },
+      { level: 'Max', value: '90 %', notes: 'Poor transpiration, disease risk', color: 'orange' },
+    ],
+    ph_voltage: [
+      { level: 'Low', value: '5.0', notes: 'Nutrient uptake begins to be limited', color: 'red' },
+      { level: 'Normal', value: '5.5–6.5', notes: 'Ideal for most nutrients', color: 'green' },
+      { level: 'High', value: '7.0', notes: 'Some nutrients like Fe less available', color: 'blue' },
+      { level: 'Max', value: '7.5', notes: 'Severe nutrient deficiency', color: 'orange' },
+    ],
+    ec_voltage: [
+      { level: 'Low', value: '0.8 mS/cm', notes: 'May cause nutrient deficiency', color: 'red' },
+      { level: 'Normal', value: '1.2–2.0 mS/cm', notes: 'Good growth', color: 'green' },
+      { level: 'High', value: '2.5–3.0 mS/cm', notes: 'Risk of salt stress', color: 'blue' },
+      { level: 'Max', value: '3.5 mS/cm', notes: 'Growth severely inhibited', color: 'orange' },
+    ],
+    distance_cm: [
+      { level: 'Low', value: '5–10 cm', notes: 'Crowding, poor aeration', color: 'red' },
+      { level: 'Normal', value: '10–15 cm', notes: 'Best growth', color: 'green' },
+      { level: 'High', value: '15–20 cm', notes: 'May reduce yield per area', color: 'blue' },
+      { level: 'Max', value: '25 cm', notes: 'Too sparse, inefficient space use', color: 'orange' },
+    ],
+  };
+
+  const paramRanges = rangesData[paramKey] || [];
+
   return (
     <ImageBackground
       source={require('../assets/notifbackground.png')}
       style={styles.background}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Header */}
-        <View style={styles.headerContainer}>
-          <Image source={require('../assets/logo.png')} style={styles.logo} />
-          <Text style={styles.headerText}>TEMPERATURE</Text>
-          <Image source={require('../assets/notifleaf.png')} style={styles.leaf} />
-        </View>
-
-        {/* Table Header */}
-        <View style={styles.tableHeader}>
-          <Text style={styles.levelText}>Level</Text>
-          <Text style={styles.rangeText}>Range{'\n'}Air Temperature</Text>
-          <Text style={styles.notesText}>Notes</Text>
-        </View>
-
-        {/* Normal */}
-        <View style={styles.row}>
-          <View style={[styles.dot, { backgroundColor: 'green' }]} />
-          <Text style={styles.levelName}>Normal</Text>
-          <Text style={styles.rangeValue}>24–28°C</Text>
-          <Text style={styles.notes}>  Ideal for leafy greens like pechay.</Text>
-        </View>
-
-        {/* High */}
-        <View style={styles.row}>
-          <View style={[styles.dot, { backgroundColor: 'blue' }]} />
-          <Text style={styles.levelName}>High</Text>
-          <Text style={styles.rangeValue}>Above 30°C</Text>
-          <Text style={styles.notes}>  Can cause wilting or bolting.</Text>
-        </View>
-
-        {/* Low */}
-        <View style={styles.row}>
-          <View style={[styles.dot, { backgroundColor: 'red' }]} />
-          <Text style={styles.levelName}>Low</Text>
-          <Text style={styles.rangeValue}>Below 20°C</Text>
-          <Text style={styles.notes}>  Slows growth, possible stressed growth.</Text>
-        </View>
-
-        {/* Max Safe Limit */}
-        <View style={styles.row}>
-          <Text style={styles.warningIcon}>⚠️</Text>
-          <Text style={styles.levelName}>Max</Text>
-          <Text style={styles.rangeValue}>32–35°C</Text>
-          <Text style={styles.notes}>  Beyond this, growth stops or plants die.</Text>
-        </View>
-      </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <View style={styles.navWrapper}>
-          <TouchableOpacity onPress={() => navigation.navigate('Dashboard')}>
-            <MaterialIcons name="menu" size={32} color="#05542f" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Dashboard')}>
-            <MaterialIcons name="home" size={32} color="#05542f" />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
-            <MaterialIcons name="notifications" size={32} color="#05542f" />
-          </TouchableOpacity>
-        </View>
+      <View style={styles.headerContainer}>
+        <Image source={require('../assets/logo.png')} style={styles.logo} />
+        <Text style={styles.headerText}>{paramName} Range</Text>
+        <Image source={require('../assets/notifleaf.png')} style={styles.leaf} />
       </View>
+
+      <View style={styles.tableHeader}>
+        <Text style={styles.levelText}>Level</Text>
+        <Text style={styles.rangeText}>Range</Text>
+        <Text style={styles.notesText}>Notes</Text>
+      </View>
+
+      <FlatList
+        data={paramRanges}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.row}>
+            <View style={[styles.dot, { backgroundColor: item.color }]} />
+            <Text style={styles.levelName}>{item.level}</Text>
+            <Text style={styles.rangeValue}>{item.value}</Text>
+            <Text style={styles.notes}>{item.notes}</Text>
+          </View>
+        )}
+      />
+
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <MaterialIcons name="arrow-back" size={28} color="#05542f" />
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    resizeMode: 'cover',
-  },
-  container: {
-    padding: 20,
-    paddingBottom: 100,
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    marginBottom: 50,
-  },
-  logo: {
-    width: 70,
-    height: 80,
-    resizeMode: 'contain',
-    marginBottom: -50,
-  },
-  headerText: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#004400',
-    marginBottom: -30,
-  },
-  leaf: {
-    width: 90,
-    height: 90,
-    resizeMode: 'contain',
-    bottom: -70,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15,
-    backgroundColor: '#477a4b',
-    padding: 8,
-    borderRadius: 5,
-  },
-  levelText: {
-    color: '#fff',
-    width: '20%',
-    fontWeight: 'bold',
-  },
-  rangeText: {
-    color: '#fff',
-    width: '50%',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  notesText: {
-    color: '#fff',
-    width: '30%',
-    textAlign: 'left',
-    fontWeight: 'bold',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'left',
-    marginVertical: 10,
-  },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 4,
-  },
-  warningIcon: {
-    fontSize: 16,
-    marginRight: 4,
-    marginLeft: 2,
-  },
-  levelName: {
-    width: '30%',
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#05542f',
-  },
-  rangeValue: {
-    width: '30%',
-    fontSize: 14,
-    color: '#05542f',
-  },
-  notes: {
-    width: '40%',
-    fontSize: 13,
-    color: '#05542f',
-    fontStyle: 'italic',
-    textAlign: 'left',
-  },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-  },
-  navWrapper: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    paddingVertical: 35,
-    paddingHorizontal: 30,
-  },
+  background: { flex: 1, resizeMode: 'cover', padding: 20 },
+  headerContainer: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 20 },
+  logo: { width: 70, height: 80, resizeMode: 'contain' },
+  headerText: { fontSize: 24, fontWeight: 'bold', color: '#004400' },
+  leaf: { width: 90, height: 90, resizeMode: 'contain' },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#477a4b', padding: 8, borderRadius: 5, marginBottom: 10 },
+  levelText: { color: '#fff', width: '20%', fontWeight: 'bold' },
+  rangeText: { color: '#fff', width: '40%', fontWeight: 'bold', textAlign: 'center' },
+  notesText: { color: '#fff', width: '40%', fontWeight: 'bold', textAlign: 'left' },
+  row: { flexDirection: 'row', alignItems: 'center', marginVertical: 8 },
+  dot: { width: 12, height: 12, borderRadius: 6, marginRight: 6 },
+  levelName: { width: '20%', fontSize: 14, fontWeight: 'bold', color: '#05542f' },
+  rangeValue: { width: '40%', fontSize: 14, textAlign: 'center', color: '#05542f' },
+  notes: { width: '40%', fontSize: 13, color: '#05542f', fontStyle: 'italic', textAlign: 'left' },
+  backButton: { flexDirection: 'row', alignItems: 'center', marginTop: 20 },
+  backText: { fontSize: 16, marginLeft: 6, color: '#05542f', fontWeight: 'bold' },
 });
