@@ -2,12 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
-from allauth.account.utils import send_email_confirmation
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
+
+# Import your SendGrid email utility
+from .utils.email import send_email_via_sendgrid
+
 
 class RegisterView(APIView):
     def post(self, request):
@@ -29,12 +30,18 @@ class RegisterView(APIView):
         user.is_active = False  # Require email verification
         user.save()
 
-        # Send verification email
-        send_email_confirmation(request, user)
+        # Send verification email via SendGrid
+        send_email_via_sendgrid(
+            subject="Welcome to GreenTech!",
+            message=f"Hello {username},\n\nYour account has been successfully created. "
+                    "Please verify your email before logging in.\n\nThank you!",
+            to_email=email
+        )
 
         return Response({
             "message": "Account created. Please check your email to verify."
         }, status=status.HTTP_201_CREATED)
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -42,6 +49,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if not self.user.is_active:
             raise AuthenticationFailed("Email not verified. Please check your inbox.")
         return data
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
