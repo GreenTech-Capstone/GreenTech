@@ -135,17 +135,20 @@ export default function Dashboard({ navigation }) {
               },
             ]}
           >
+            {/* Alerts menu: parameter-specific */}
             <Pressable
               style={styles.menuBox}
               onPress={() => {
                 closeMenu();
-                navigation.navigate('Alerts');
+                const param = parameters.find(p => p.id === visibleMenu);
+                if (param)
+                  navigation.navigate('Alerts', { paramKey: param.key, paramName: param.name });
               }}
             >
               <Text style={styles.menuItem}>View Alerts</Text>
             </Pressable>
 
-            {/* Updated History navigation: passes parameter key & name */}
+            {/* History */}
             <Pressable
               style={styles.menuBox}
               onPress={() => {
@@ -158,11 +161,14 @@ export default function Dashboard({ navigation }) {
               <Text style={styles.menuItem}>View History</Text>
             </Pressable>
 
+            {/* Range */}
             <Pressable
               style={styles.menuBox}
               onPress={() => {
                 closeMenu();
-                navigation.navigate('Range');
+                const param = parameters.find(p => p.id === visibleMenu);
+                if (param)
+                  navigation.navigate('Range', { paramKey: param.key, paramName: param.name });
               }}
             >
               <Text style={styles.menuItem}>View Range</Text>
