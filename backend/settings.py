@@ -139,12 +139,12 @@ CORS_ALLOW_ALL_ORIGINS = True  # For testing
 
 # ================== EMAIL CONFIG — BREVO SMTP ==================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = env("EMAIL_HOST", default="smtp-relay.brevo.com")
-EMAIL_PORT = env.int("EMAIL_PORT", default=587)
-EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-EMAIL_HOST_USER = "9bff26001@smtp-brevo.com"
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")  # your Brevo SMTP key
-DEFAULT_FROM_EMAIL = "GreenTech <9bff26001@smtp-brevo.com>"
+EMAIL_HOST = "smtp.sendgrid.net"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "apikey"   # This value is ALWAYS literally "apikey"
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # Loaded from Render
+DEFAULT_FROM_EMAIL = "jhusthine.ello@gmail.com"
 
 # ================== DJANGO-ALLAUTH ==================
 AUTHENTICATION_BACKENDS = (
@@ -154,7 +154,7 @@ AUTHENTICATION_BACKENDS = (
 
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_SIGNUP_FIELDS = ['username', 'email', 'password1', 'password2']
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
