@@ -13,20 +13,35 @@ export default function RegisterScreen({ navigation }) {
   const [message, setMessage] = useState('');
 
   const handleRegister = async () => {
+    if (!username || !email || !password) {
+      alert("All fields required");
+      return;
+    }
+
     try {
       console.log("Sending request to backend...");
+
       const response = await fetch(`${BASE_URL}/api/register/`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ username, email, password }),
       });
 
       console.log("Response status:", response.status);
-      const data = await response.json();
-      console.log("Response data:", data);
+
+      // Get raw backend response
+      const raw = await response.text();
+      console.log("Raw response:", raw);
+
+      // Try to parse JSON safely
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch {
+        data = { error: raw };
+      }
 
       if (response.ok) {
         Alert.alert("Verify Email", "A verification link has been sent to your inbox.");
@@ -37,6 +52,7 @@ export default function RegisterScreen({ navigation }) {
       } else {
         setMessage(data.error || data.detail || "Registration failed");
       }
+
     } catch (error) {
       console.log("Fetch error:", error);
       setMessage("Error connecting to server");
