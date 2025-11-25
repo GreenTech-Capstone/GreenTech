@@ -21,8 +21,13 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.onrender.com',
+    'https://greentech-ud0q.onrender.com',
 ]
+
+
+SECURE_REFERRER_POLICY = "no-referrer"
+CSRF_COOKIE_SECURE = False
+CSRF_USE_SESSIONS = False
 
 # ================== APPS ==================
 INSTALLED_APPS = [
