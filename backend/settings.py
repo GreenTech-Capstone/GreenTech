@@ -24,7 +24,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://greentech-ud0q.onrender.com',
 ]
 
-
 SECURE_REFERRER_POLICY = "no-referrer"
 CSRF_COOKIE_SECURE = False
 CSRF_USE_SESSIONS = False
@@ -89,9 +88,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'wsgi.application'
 
-# Prevent allauth from demanding AccountMiddleware
-ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
-
 # ================== DATABASE ==================
 DATABASES = {
     'default': {
@@ -136,11 +132,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ================== CORS ==================
 CORS_ALLOW_ALL_ORIGINS = True  # For testing
-# For production, you can restrict:
-# CORS_ALLOWED_ORIGINS = [
-#     "exp://127.0.0.1:19000",  # Expo Go dev server
-#     "https://greentech-ud0q.onrender.com",
-# ]
 
 # ================== EMAIL CONFIG — BREVO SMTP ==================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -164,3 +155,13 @@ ACCOUNT_SIGNUP_FIELDS = ['username', 'email', 'password1', 'password2']
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 LOGIN_REDIRECT_URL = '/'
+
+# ================== ALLAUTH API FIXES ==================
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
+ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/"
+ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = "/"
+
+# Use custom adapter to bypass referer check for API
+ACCOUNT_ADAPTER = "api.adapters.NoCsrfAccountAdapter"
