@@ -27,7 +27,8 @@ export default function ChangePassword({ navigation }) {
     try {
       setLoading(true);
 
-      const response = await fetch(`${BASE_URL}/password-reset/`, {
+      // ✅ FIXED URL → Added /api/
+      const response = await fetch(`${BASE_URL}/api/password-reset/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
