@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, Alert,
-  KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Alert,
 } from 'react-native';
+
 import { BASE_URL } from '../config';
 
 export default function ChangePassword({ navigation }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleReset = async () => {
-    if (!email) return Alert.alert("Error", "Enter your email");
+  const handleResetPassword = async () => {
+    if (!email)
+      return Alert.alert("Error", "Please enter your email");
 
     try {
       setLoading(true);
@@ -21,45 +33,112 @@ export default function ChangePassword({ navigation }) {
         body: JSON.stringify({ email }),
       });
 
-      if (response.ok) {
-        Alert.alert("Success", "Reset link sent to your email.");
-      } else {
-        Alert.alert("Error", "Failed to send reset email.");
-      }
+      const data = await response.json();
 
+      if (response.ok) {
+        Alert.alert(
+          "Success",
+          "Password reset link sent to your email"
+        );
+        navigation.goBack();
+      } else {
+        Alert.alert("Error", data.error || "Failed to send reset link");
+      }
     } catch (error) {
-      Alert.alert("Error", "Server issue");
+      Alert.alert("Error", "Could not connect to server");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
-          <Text style={styles.title}>Reset Password</Text>
+    <ImageBackground
+      source={require('../assets/Password Background.png')}
+      style={styles.background}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.avoidingView}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={styles.container}>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your email"
-            value={email}
-            onChangeText={setEmail}
-          />
+            <View style={styles.header}>
+              <Image
+                source={require('../assets/password.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+              <Text style={styles.title}>Reset Password</Text>
+            </View>
 
-          <TouchableOpacity style={styles.button} onPress={handleReset} disabled={loading}>
-            <Text style={styles.buttonText}>{loading ? "Sending..." : "Send Reset Link"}</Text>
-          </TouchableOpacity>
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+            <View style={styles.form}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Your Email"
+                value={email}
+                onChangeText={setEmail}
+                placeholderTextColor="#2e6e4e"
+              />
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleResetPassword}
+                disabled={loading}
+              >
+                <Text style={styles.buttonText}>
+                  {loading ? "Sending..." : "Send Reset Link"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#dbf7c5', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 30 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#05542f', marginBottom: 30 },
-  input: { width: '100%', backgroundColor: '#fff', padding: 12, borderRadius: 10, marginVertical: 8 },
-  button: { backgroundColor: '#05542f', paddingVertical: 14, paddingHorizontal: 30, borderRadius: 18, marginTop: 20 },
-  buttonText: { color: '#dbf7c5', fontWeight: 'bold', fontSize: 16 },
+  background: { flex: 1, width: '100%', height: '100%' },
+  avoidingView: { flex: 1 },
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  header: { alignItems: 'center', marginTop: 15 },
+  logo: { width: 120, height: 120 },
+  title: {
+    fontSize: 35,
+    fontWeight: 'bold',
+    marginTop: 10,
+    color: '#05542f',
+  },
+  form: {
+    width: '85%',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  input: {
+    backgroundColor: '#dbf7c5',
+    width: '90%',
+    padding: 12,
+    borderRadius: 10,
+    marginVertical: 10,
+    color: '#05542f',
+  },
+  button: {
+    backgroundColor: '#dbf7c5',
+    paddingVertical: 14,
+    borderRadius: 18,
+    width: '60%',
+    alignItems: 'center',
+    marginTop: 15,
+  },
+  buttonText: {
+    color: '#05542f',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });

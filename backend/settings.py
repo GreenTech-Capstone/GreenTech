@@ -13,20 +13,28 @@ SECRET_KEY = env("SECRET_KEY", default="django-insecure-dev-key")
 DEBUG = env.bool("DEBUG", default=True)
 
 ALLOWED_HOSTS = [
-    'localhost', 
-    '127.0.0.1', 
-    '.onrender.com', 
-    'greentech-ud0q.onrender.com',  # your Render backend
-    '10.0.1.105'  # your local device IP (optional)
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',
+    'greentech-ud0q.onrender.com',
+    '10.0.1.105'
 ]
 
+# ================== CSRF / REFERER FIX FOR MOBILE ==================
 CSRF_TRUSTED_ORIGINS = [
     'https://greentech-ud0q.onrender.com',
 ]
 
+# Mobile apps do not send Referer -> MUST disable
 SECURE_REFERRER_POLICY = "no-referrer"
 CSRF_COOKIE_SECURE = False
 CSRF_USE_SESSIONS = False
+CSRF_REFERER_POLICY = "same-origin"
+
+CSRF_TRUSTED_ORIGINS += [
+    "http://localhost",
+    "http://127.0.0.1",
+]
 
 # ================== APPS ==================
 INSTALLED_APPS = [
@@ -37,7 +45,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Third-party
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -46,7 +53,6 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
 
-    # Your apps
     'api',
 ]
 
@@ -64,7 +70,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    # Required by django-allauth
     'allauth.account.middleware.AccountMiddleware',
 ]
 
@@ -78,7 +83,7 @@ TEMPLATES = [
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
-                'django.template.context_processors.request',  # required by allauth
+                'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
@@ -131,18 +136,18 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ================== CORS ==================
-CORS_ALLOW_ALL_ORIGINS = True  # For testing
+CORS_ALLOW_ALL_ORIGINS = True
 
-# ================== EMAIL CONFIG — BREVO SMTP ==================
+# ================== EMAIL CONFIG (SENDGRID) ==================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.sendgrid.net"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "apikey"   # This value is ALWAYS literally "apikey"
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")  # Loaded from Render
+EMAIL_HOST_USER = "apikey"
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = "jhusthine.ello@gmail.com"
 
-# ================== DJANGO-ALLAUTH ==================
+# ================== ALLAUTH ==================
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
@@ -156,12 +161,10 @@ ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 LOGIN_REDIRECT_URL = '/'
 
-# ================== ALLAUTH API FIXES ==================
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = "/"
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = "/"
 
-# Use custom adapter to bypass referer check for API
 ACCOUNT_ADAPTER = "api.adapters.NoCsrfAccountAdapter"
