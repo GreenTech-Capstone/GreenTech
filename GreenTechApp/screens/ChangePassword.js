@@ -13,7 +13,6 @@ import {
   Keyboard,
   Alert,
 } from 'react-native';
-
 import { BASE_URL } from '../config';
 
 export default function ChangePassword({ navigation }) {
@@ -21,14 +20,11 @@ export default function ChangePassword({ navigation }) {
   const [loading, setLoading] = useState(false);
 
   const handleResetPassword = async () => {
-    if (!email)
-      return Alert.alert("Error", "Please enter your email");
+    if (!email) return Alert.alert("Error", "Please enter your email");
 
     try {
       setLoading(true);
-
-      // ✅ FIXED URL → Added /api/
-      const response = await fetch(`${BASE_URL}/api/password-reset/`, {
+      const response = await fetch(`${BASE_URL}/password-reset/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -39,7 +35,7 @@ export default function ChangePassword({ navigation }) {
       if (response.ok) {
         Alert.alert(
           "Success",
-          "Password reset link sent to your email"
+          "Password reset link sent! Check your email."
         );
         navigation.goBack();
       } else {
@@ -63,7 +59,6 @@ export default function ChangePassword({ navigation }) {
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.container}>
-
             <View style={styles.header}>
               <Image
                 source={require('../assets/password.png')}
@@ -92,7 +87,6 @@ export default function ChangePassword({ navigation }) {
                 </Text>
               </TouchableOpacity>
             </View>
-
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -103,43 +97,12 @@ export default function ChangePassword({ navigation }) {
 const styles = StyleSheet.create({
   background: { flex: 1, width: '100%', height: '100%' },
   avoidingView: { flex: 1 },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
+  container: { flex: 1, alignItems: 'center', paddingVertical: 40 },
   header: { alignItems: 'center', marginTop: 15 },
   logo: { width: 120, height: 120 },
-  title: {
-    fontSize: 35,
-    fontWeight: 'bold',
-    marginTop: 10,
-    color: '#05542f',
-  },
-  form: {
-    width: '85%',
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  input: {
-    backgroundColor: '#dbf7c5',
-    width: '90%',
-    padding: 12,
-    borderRadius: 10,
-    marginVertical: 10,
-    color: '#05542f',
-  },
-  button: {
-    backgroundColor: '#dbf7c5',
-    paddingVertical: 14,
-    borderRadius: 18,
-    width: '60%',
-    alignItems: 'center',
-    marginTop: 15,
-  },
-  buttonText: {
-    color: '#05542f',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  title: { fontSize: 35, fontWeight: 'bold', marginTop: 10, color: '#05542f' },
+  form: { width: '85%', alignItems: 'center', marginTop: 20 },
+  input: { backgroundColor: '#dbf7c5', width: '90%', padding: 12, borderRadius: 10, marginVertical: 10, color: '#05542f' },
+  button: { backgroundColor: '#dbf7c5', paddingVertical: 14, borderRadius: 18, width: '60%', alignItems: 'center', marginTop: 15 },
+  buttonText: { color: '#05542f', fontSize: 16, fontWeight: 'bold' },
 });
