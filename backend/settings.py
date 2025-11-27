@@ -138,6 +138,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ================== CORS ==================
 CORS_ALLOW_ALL_ORIGINS = True
 
+APPEND_SLASH = True
+
 # ================== EMAIL CONFIG (SENDGRID) ==================
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.sendgrid.net"
