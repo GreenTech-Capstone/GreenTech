@@ -30,10 +30,14 @@ SECURE_REFERRER_POLICY = "no-referrer"
 CSRF_COOKIE_SECURE = False
 CSRF_USE_SESSIONS = False
 CSRF_REFERER_POLICY = "same-origin"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CSRF_TRUSTED_ORIGINS += [
     "http://localhost",
     "http://127.0.0.1",
+    "https://greentech-ud0q.onrender.com",
+    "https://*.onrender.com",
+    "https://*.render.com",
 ]
 
 # ================== APPS ==================
@@ -72,6 +76,8 @@ MIDDLEWARE = [
 
     'allauth.account.middleware.AccountMiddleware',
 ]
+
+MIDDLEWARE.insert(0, 'api.middleware.DisableCSRFMiddleware')
 
 ROOT_URLCONF = 'backend.urls'
 
