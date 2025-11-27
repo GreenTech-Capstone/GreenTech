@@ -1,92 +1,98 @@
+# api/views.py
+import uuid
+import os
 from django.contrib.auth.models import User
+from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.urls import reverse
 
-import uuid
-
-from .utils.email import send_email_via_sendgrid
 from .models import EmailVerificationToken
+from .utils.email import send_email_via_sendgrid
 
 
-# ===============================
+# ================================
 # REGISTER + EMAIL VERIFICATION
-# ===============================
+# ================================
 class RegisterView(APIView):
     def post(self, request):
         username = request.data.get("username")
         email = request.data.get("email")
         password = request.data.get("password")
 
-        if not email or not username or not password:
-            return Response({"error": "All fields required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not username or not email or not password:
+            return Response({"error": "All fields required"}, status=400)
 
         if User.objects.filter(username=username).exists():
-            return Response({"error": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Username already taken"}, status=400)
 
         if User.objects.filter(email=email).exists():
-            return Response({"error": "Email already registered"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Email already registered"}, status=400)
 
         # Create inactive user
         user = User.objects.create_user(username=username, email=email, password=password)
         user.is_active = False
         user.save()
 
-        # Generate verification token
+        # Token
         token = str(uuid.uuid4())
-        EmailVerificationToken.objects.create(user=user, token=token)
+        EmailVerificationToken.objects.update_or_create(user=user, defaults={"token": token})
 
-        base_url = "https://greentech-ud0q.onrender.com"
-        verify_url = f"{base_url}{reverse('verify-email')}?token={token}"
+        # Deep link & Web link
+        app_scheme = os.getenv("MOBILE_APP_SCHEME", "greentechapp")
+        app_link = f"{app_scheme}://verify-email/{token}"
 
-        send_email_via_sendgrid(
-            subject="Verify your GreenTech account",
-            message=(
-                f"Hello {username},\n\n"
-                f"Please verify your email by clicking the link below:\n{verify_url}\n\n"
-                "Thank you for registering with GreenTech!"
-            ),
-            to_email=user.email
+        web_domain = os.getenv("RENDER_DOMAIN", "greentech-ud0q.onrender.com")
+        web_link = f"https://{web_domain}{reverse('verify-email')}?token={token}"
+
+        message = (
+            f"Hello {username},\n\n"
+            f"Verify your GreenTech account:\n\n"
+            f"In App: {app_link}\n"
+            f"Web: {web_link}\n\n"
+            "Thank you!"
         )
 
-        return Response({"message": "Account created. Check your email to verify!"}, status=status.HTTP_201_CREATED)
+        send_email_via_sendgrid(
+            subject="Verify your GreenTech Account",
+            message=message,
+            to_email=email
+        )
+
+        return Response({"message": "Account created. Check your email to verify."}, status=201)
 
 
 class VerifyEmailView(APIView):
     def get(self, request):
         token = request.GET.get("token")
-
         if not token:
-            return Response({"error": "Token missing"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Token missing"}, status=400)
 
         try:
             record = EmailVerificationToken.objects.get(token=token)
         except EmailVerificationToken.DoesNotExist:
-            return Response({"error": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid/expired token"}, status=400)
 
         user = record.user
         user.is_active = True
         user.save()
-
-        # delete token
         record.delete()
 
-        return Response({"message": "Email verified! You may now log in."})
+        return Response({"message": "Email verified successfully."}, status=200)
 
 
-# ===============================
-# LOGIN WITH EMAIL VERIFICATION CHECK
-# ===============================
+# ================================
+# JWT LOGIN
+# ================================
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
 
         if not self.user.is_active:
-            raise AuthenticationFailed("Email not verified. Please check your inbox.")
+            raise AuthenticationFailed("Email not verified.")
 
         return data
 
@@ -95,65 +101,66 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-# ===============================
-# PASSWORD RESET: REQUEST
-# ===============================
+# ================================
+# PASSWORD RESET REQUEST
+# ================================
 class PasswordResetRequestView(APIView):
     def post(self, request):
         email = request.data.get("email")
-
         if not email:
-            return Response({"error": "Email required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Email required"}, status=400)
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            return Response({"error": "No user with that email"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Email not registered"}, status=404)
 
         token = str(uuid.uuid4())
+        EmailVerificationToken.objects.update_or_create(user=user, defaults={"token": token})
 
-        EmailVerificationToken.objects.update_or_create(
-            user=user,
-            defaults={"token": token},
+        app_scheme = os.getenv("MOBILE_APP_SCHEME", "greentechapp")
+        app_link = f"{app_scheme}://reset-password/{token}"
+
+        web_domain = os.getenv("RENDER_DOMAIN", "greentech-ud0q.onrender.com")
+        web_link = f"https://{web_domain}{reverse('password-reset-confirm')}?token={token}"
+
+        message = (
+            f"Hello {user.username},\n\n"
+            f"Reset your password:\n"
+            f"In App: {app_link}\n"
+            f"Web: {web_link}\n\n"
+            "If you did not request this, ignore it."
         )
 
-        base_url = "https://greentech-ud0q.onrender.com"
-        reset_url = f"{base_url}{reverse('password-reset-confirm')}?token={token}"
-
         send_email_via_sendgrid(
-            subject="Reset your GreenTech password",
-            message=(
-                f"Hello {user.username},\n\n"
-                f"Click the link below to reset your password:\n{reset_url}\n\n"
-                "If you did not request this, please ignore this email."
-            ),
+            subject="Reset Your Password",
+            message=message,
             to_email=email
         )
 
-        return Response({"message": "Password reset link sent"}, status=status.HTTP_200_OK)
+        return Response({"message": "Password reset email sent"}, status=200)
 
 
-# ===============================
-# PASSWORD RESET: CONFIRM
-# ===============================
+# ================================
+# PASSWORD RESET CONFIRM
+# ================================
 class PasswordResetConfirmView(APIView):
     def post(self, request):
         token = request.data.get("token")
         new_password = request.data.get("password")
 
         if not token or not new_password:
-            return Response({"error": "Token and new password required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Token + password required"}, status=400)
 
         try:
             record = EmailVerificationToken.objects.get(token=token)
         except EmailVerificationToken.DoesNotExist:
-            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid/expired token"}, status=400)
 
         user = record.user
         user.set_password(new_password)
         user.save()
 
-        # delete token
         record.delete()
 
-        return Response({"message": "Password has been reset successfully"})
+        return Response({"message": "Password reset successful"}, status=200)
