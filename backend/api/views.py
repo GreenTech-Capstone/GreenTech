@@ -1,4 +1,3 @@
-# api/views.py
 import uuid
 import os
 from django.contrib.auth.models import User
@@ -9,14 +8,17 @@ from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import RetrieveUpdateAPIView
 
-from .models import EmailVerificationToken
+from .models import EmailVerificationToken, Profile
+from .serializers import ProfileSerializer
 from .utils.email import send_email_via_sendgrid
 
 
-# ================================
+# -------------------------------
 # REGISTER + EMAIL VERIFICATION
-# ================================
+# -------------------------------
 class RegisterView(APIView):
     def post(self, request):
         username = request.data.get("username")
@@ -32,16 +34,13 @@ class RegisterView(APIView):
         if User.objects.filter(email=email).exists():
             return Response({"error": "Email already registered"}, status=400)
 
-        # Create inactive user
         user = User.objects.create_user(username=username, email=email, password=password)
         user.is_active = False
         user.save()
 
-        # Token
         token = str(uuid.uuid4())
         EmailVerificationToken.objects.update_or_create(user=user, defaults={"token": token})
 
-        # Deep link & Web link
         app_scheme = os.getenv("MOBILE_APP_SCHEME", "greentechapp")
         app_link = f"{app_scheme}://verify-email/{token}"
 
@@ -50,7 +49,7 @@ class RegisterView(APIView):
 
         message = (
             f"Hello {username},\n\n"
-            f"Verify your GreenTech account:\n\n"
+            f"Verify your GreenTech account:\n"
             f"In App: {app_link}\n"
             f"Web: {web_link}\n\n"
             "Thank you!"
@@ -62,7 +61,7 @@ class RegisterView(APIView):
             to_email=email
         )
 
-        return Response({"message": "Account created. Check your email to verify."}, status=201)
+        return Response({"message": "Account created. Check your email."}, status=201)
 
 
 class VerifyEmailView(APIView):
@@ -84,16 +83,14 @@ class VerifyEmailView(APIView):
         return Response({"message": "Email verified successfully."}, status=200)
 
 
-# ================================
-# JWT LOGIN
-# ================================
+# -------------------------------
+# CUSTOM JWT LOGIN
+# -------------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-
         if not self.user.is_active:
             raise AuthenticationFailed("Email not verified.")
-
         return data
 
 
@@ -101,9 +98,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
-# ================================
-# PASSWORD RESET REQUEST
-# ================================
+# -------------------------------
+# PASSWORD RESET
+# -------------------------------
 class PasswordResetRequestView(APIView):
     def post(self, request):
         email = request.data.get("email")
@@ -128,8 +125,8 @@ class PasswordResetRequestView(APIView):
             f"Hello {user.username},\n\n"
             f"Reset your password:\n"
             f"In App: {app_link}\n"
-            f"Web: {web_link}\n\n"
-            "If you did not request this, ignore it."
+            f"Web: {web_link}\n"
+            "If this was not you, ignore this."
         )
 
         send_email_via_sendgrid(
@@ -141,9 +138,6 @@ class PasswordResetRequestView(APIView):
         return Response({"message": "Password reset email sent"}, status=200)
 
 
-# ================================
-# PASSWORD RESET CONFIRM
-# ================================
 class PasswordResetConfirmView(APIView):
     def post(self, request):
         token = request.data.get("token")
@@ -164,3 +158,15 @@ class PasswordResetConfirmView(APIView):
         record.delete()
 
         return Response({"message": "Password reset successful"}, status=200)
+
+
+# -------------------------------
+# PROFILE VIEW (GET / UPDATE)
+# -------------------------------
+class ProfileView(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProfileSerializer
+
+    def get_object(self):
+        profile, _ = Profile.objects.get_or_create(user=self.request.user)
+        return profile
