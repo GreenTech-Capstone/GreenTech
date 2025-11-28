@@ -8,7 +8,6 @@ export default function AlertScreen({ route }) {
   const [currentValue, setCurrentValue] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Define ideal ranges for each parameter
   const ranges = {
     humidity: { min: 60, max: 70 },
     air_temperature: { min: 22, max: 28 },
@@ -32,7 +31,7 @@ export default function AlertScreen({ route }) {
       if (error) throw error;
       if (data && data.length > 0) setCurrentValue(data[0][paramKey]);
     } catch (err) {
-      console.error('Error fetching latest data:', err.message);
+      console.error('Error fetching data:', err.message);
     } finally {
       setLoading(false);
     }
@@ -40,8 +39,6 @@ export default function AlertScreen({ route }) {
 
   useEffect(() => {
     fetchLatestData();
-
-    // Real-time subscription for this parameter only
     const channel = supabase
       .channel(`sensor_changes_${paramKey}`)
       .on(
@@ -54,7 +51,6 @@ export default function AlertScreen({ route }) {
     return () => supabase.removeChannel(channel);
   }, []);
 
-  // Determine notifications for this parameter only
   const notifications = [];
   let tip = '';
 
@@ -67,7 +63,11 @@ export default function AlertScreen({ route }) {
       notifications.push({ type: 'alert', message: `${paramName} too high! Current: ${currentValue}`, color: 'red' });
     } else {
       tip = `💡 Tip: ${paramName} is ideal. Maintain current conditions.`;
-      notifications.push({ type: 'info', message: `${paramName} is optimal: ${currentValue} (Ideal: ${idealRange.min}–${idealRange.max})`, color: 'green' });
+      notifications.push({
+        type: 'info',
+        message: `${paramName} is optimal: ${currentValue} (Ideal: ${idealRange.min}–${idealRange.max})`,
+        color: 'green'
+      });
     }
   }
 
@@ -82,15 +82,13 @@ export default function AlertScreen({ route }) {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Image source={require('../assets/logo.png')} style={styles.logo} />
-        <Text style={styles.title}>{paramName ? paramName.toUpperCase() : 'PARAMETER'}</Text>
+        <Text style={styles.title}>{paramName.toUpperCase()}</Text>
       </View>
 
       <Text style={styles.alertLabel}>ALERT</Text>
 
-      {/* Indicators */}
       <View style={styles.indicators}>
         <View style={styles.indicator}>
           <View style={[styles.circle, { backgroundColor: 'red' }]} />
@@ -102,12 +100,10 @@ export default function AlertScreen({ route }) {
         </View>
       </View>
 
-      {/* Tip: moved above notifications */}
-      <View style={[styles.tipContainer, { marginBottom: 15 }]}>
+      <View style={styles.tipContainer}>
         <Text style={styles.tipText}>{tip}</Text>
       </View>
 
-      {/* Notifications */}
       <ScrollView style={styles.notificationContainer}>
         {notifications.map((note, index) => (
           <View key={index} style={styles.notification}>
@@ -122,19 +118,46 @@ export default function AlertScreen({ route }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#dff3d1', padding: 20 },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  logo: { width: 40, height: 40, marginRight: 10 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#006837' },
-  alertLabel: { fontSize: 20, fontWeight: 'bold', color: 'white', backgroundColor: '#006837', textAlign: 'center', paddingVertical: 6, borderRadius: 5, marginVertical: 10 },
-  indicators: { flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 15 },
+  
+  // Header moved lower with marginTop
+  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, marginTop: 40 },
+  logo: { width: 40, height: 40, marginRight: 10 }, // same height as text
+  title: { fontSize: 30, fontWeight: 'bold', color: '#006837' },
+
+  alertLabel: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+    backgroundColor: '#006837',
+    textAlign: 'center',
+    paddingVertical: 6,
+    borderRadius: 5,
+    marginVertical: 10
+  },
+
+  indicators: { flexDirection: 'row', marginBottom: 10 },
   indicator: { flexDirection: 'row', alignItems: 'center', marginRight: 15 },
   circle: { width: 15, height: 15, borderRadius: 7.5, marginRight: 5 },
-  indicatorText: { fontSize: 14, fontWeight: 'bold', color: '#333' },
-  notificationContainer: { flex: 1 },
-  notification: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#c6e5b7', borderRadius: 8, padding: 10, marginBottom: 8 },
+  indicatorText: { fontSize: 14, fontWeight: 'bold' },
+
+  notificationContainer: { flex: 1, marginTop: 10 },
+  notification: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#c6e5b7',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 8
+  },
   dot: { width: 12, height: 12, borderRadius: 6, marginRight: 8 },
-  notificationText: { fontSize: 14, color: '#05542f' },
-  tipContainer: { padding: 10, backgroundColor: '#e6f4d9', borderRadius: 8 },
+  notificationText: { fontSize: 14 },
+
+  tipContainer: {
+    padding: 12,
+    backgroundColor: '#e6f4d9',
+    borderRadius: 8,
+    marginTop: 40
+  },
   tipText: { fontSize: 14, color: '#555' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
