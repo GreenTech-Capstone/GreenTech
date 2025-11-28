@@ -3,19 +3,16 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, ImageBackground, Image,
   KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard
 } from 'react-native';
-import Checkbox from 'expo-checkbox';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../config';
 
 export default function LoginScreen({ navigation }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [message, setMessage] = useState('');
 
   const handleLogin = async () => {
     try {
-      console.log("Logging in...");
       const response = await fetch(`${BASE_URL}/api/login/`, {
         method: 'POST',
         headers: {
@@ -25,9 +22,7 @@ export default function LoginScreen({ navigation }) {
         body: JSON.stringify({ username, password }),
       });
 
-      console.log("Response status:", response.status);
       const data = await response.json();
-      console.log("Response data:", data);
 
       if (response.ok) {
         await AsyncStorage.setItem("access", data.access);
@@ -57,19 +52,24 @@ export default function LoginScreen({ navigation }) {
             </View>
 
             <View style={styles.form}>
-              <TextInput placeholder="Username" value={username} onChangeText={setUsername} style={styles.input} />
-              <TextInput placeholder="Password" value={password} onChangeText={setPassword} secureTextEntry style={styles.input} />
+              <TextInput 
+                placeholder="Username" 
+                value={username} 
+                onChangeText={setUsername} 
+                style={styles.input} 
+              />
+              <TextInput 
+                placeholder="Password" 
+                value={password} 
+                onChangeText={setPassword} 
+                secureTextEntry 
+                style={styles.input} 
+              />
 
-              <View style={styles.optionsRow}>
-                <View style={styles.rememberContainer}>
-                  <Checkbox value={rememberMe} onValueChange={setRememberMe} color={rememberMe ? '#05542f' : undefined} />
-                  <Text style={styles.rememberText}> Remember Me</Text>
-                </View>
-
-                <TouchableOpacity onPress={() => navigation.navigate('ChangePassword')}>
-                  <Text style={styles.forgot}>Forgot Password?</Text>
-                </TouchableOpacity>
-              </View>
+              {/* Register link */}
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={styles.registerText}>Don't have an account? Register.</Text>
+              </TouchableOpacity>
 
               <TouchableOpacity style={styles.button} onPress={handleLogin}>
                 <Text style={styles.buttonText}>LOGIN</Text>
@@ -78,7 +78,6 @@ export default function LoginScreen({ navigation }) {
               {message !== '' && <Text style={styles.message}>{message}</Text>}
             </View>
 
-            <Image source={require('../assets/leaves.png')} style={styles.leaf} resizeMode="contain" />
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
@@ -89,18 +88,14 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   background: { flex: 1, width: '100%', height: '100%' },
   avoidingView: { flex: 1 },
-  container: { flex: 1, alignItems: 'center', justifyContent: 'space-between', paddingVertical: 40 },
+  container: { flex: 1, alignItems: 'center', justifyContent: 'flex-start', paddingVertical: 40 },
   header: { alignItems: 'center', marginTop: 30 },
   logo: { width: 120, height: 120 },
   welcome: { fontSize: 36, fontWeight: 'bold', marginTop: 15, color: '#05542f' },
-  form: { width: '85%', alignItems: 'center' },
+  form: { width: '85%', alignItems: 'center', marginTop: 70 }, // moved lower
   input: { backgroundColor: '#dbf7c5', width: '90%', padding: 12, borderRadius: 10, marginVertical: 8 },
-  optionsRow: { flexDirection: 'row', justifyContent: 'space-between', width: '90%', marginTop: 10, marginBottom: 20 },
-  rememberContainer: { flexDirection: 'row', alignItems: 'center' },
-  rememberText: { marginLeft: 8, color: '#dbf7c5' },
-  forgot: { color: '#dbf7c5', fontWeight: 'bold' },
+  registerText: { color: '#dbf7c5', fontWeight: 'bold', marginVertical: 10 },
   button: { backgroundColor: '#dbf7c5', paddingVertical: 14, borderRadius: 18, width: '60%', alignItems: 'center', marginTop: 10 },
   buttonText: { color: '#05542f', fontSize: 16, fontWeight: 'bold' },
-  leaf: { width: 100, height: 100, marginBottom: -140, bottom: 390, left: -130 },
   message: { marginTop: 10, color: 'red', textAlign: 'center' },
 });
