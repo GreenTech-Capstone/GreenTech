@@ -25,9 +25,30 @@ export default function LoginScreen({ navigation }) {
       const data = await response.json();
 
       if (response.ok) {
+        // Save tokens
         await AsyncStorage.setItem("access", data.access);
         await AsyncStorage.setItem("refresh", data.refresh);
         await AsyncStorage.setItem("username", username);
+
+        // =============================
+        // RESTORE / INITIALIZE PROFILE
+        // =============================
+        const savedName = await AsyncStorage.getItem("name");
+        const savedLastName = await AsyncStorage.getItem("lastName");
+        const savedAge = await AsyncStorage.getItem("age");
+        const savedAddress = await AsyncStorage.getItem("address");
+        const savedContact = await AsyncStorage.getItem("contact");
+        const savedGender = await AsyncStorage.getItem("gender");
+        const savedBirthday = await AsyncStorage.getItem("birthday");
+
+        // Initialize missing values
+        await AsyncStorage.setItem("name", savedName || "");
+        await AsyncStorage.setItem("lastName", savedLastName || "");
+        await AsyncStorage.setItem("age", savedAge || "");
+        await AsyncStorage.setItem("address", savedAddress || "");
+        await AsyncStorage.setItem("contact", savedContact || "");
+        await AsyncStorage.setItem("gender", savedGender || "");
+        await AsyncStorage.setItem("birthday", savedBirthday || "");
 
         setMessage('Login successful');
         navigation.navigate('Dashboard');
@@ -66,7 +87,6 @@ export default function LoginScreen({ navigation }) {
                 style={styles.input} 
               />
 
-              {/* Register link */}
               <TouchableOpacity onPress={() => navigation.navigate('Register')}>
                 <Text style={styles.registerText}>Don't have an account? Register.</Text>
               </TouchableOpacity>
@@ -92,7 +112,7 @@ const styles = StyleSheet.create({
   header: { alignItems: 'center', marginTop: 30 },
   logo: { width: 120, height: 120 },
   welcome: { fontSize: 36, fontWeight: 'bold', marginTop: 15, color: '#05542f' },
-  form: { width: '85%', alignItems: 'center', marginTop: 70 }, // moved lower
+  form: { width: '85%', alignItems: 'center', marginTop: 70 },
   input: { backgroundColor: '#dbf7c5', width: '90%', padding: 12, borderRadius: 10, marginVertical: 8 },
   registerText: { color: '#dbf7c5', fontWeight: 'bold', marginVertical: 10 },
   button: { backgroundColor: '#dbf7c5', paddingVertical: 14, borderRadius: 18, width: '60%', alignItems: 'center', marginTop: 10 },
