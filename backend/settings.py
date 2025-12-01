@@ -97,7 +97,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'wsgi.application'
+WSGI_APPLICATION = 'backend.wsgi.application'
 
 # ================== DATABASE ==================
 DATABASES = {
