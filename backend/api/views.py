@@ -2,6 +2,7 @@ import uuid
 import os
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -64,23 +65,31 @@ class RegisterView(APIView):
         return Response({"message": "Account created. Check your email."}, status=201)
 
 
+# -------------------------------
+# VERIFY EMAIL (RENDER HTML PAGE)
+# -------------------------------
 class VerifyEmailView(APIView):
     def get(self, request):
         token = request.GET.get("token")
+
         if not token:
-            return Response({"error": "Token missing"}, status=400)
+            return Response({"error": "Token missing"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             record = EmailVerificationToken.objects.get(token=token)
         except EmailVerificationToken.DoesNotExist:
-            return Response({"error": "Invalid/expired token"}, status=400)
+            return Response({"error": "Invalid/expired token"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Activate user
         user = record.user
         user.is_active = True
         user.save()
+
+        # Delete used token
         record.delete()
 
-        return Response({"message": "Email verified successfully."}, status=200)
+        # Render custom success page
+        return render(request, "verify_email_success.html")
 
 
 # -------------------------------
@@ -161,7 +170,7 @@ class PasswordResetConfirmView(APIView):
 
 
 # -------------------------------
-# PROFILE VIEW (GET / UPDATE)
+# PROFILE VIEW
 # -------------------------------
 class ProfileView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
