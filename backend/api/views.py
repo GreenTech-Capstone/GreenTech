@@ -3,6 +3,7 @@ import os
 
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.contrib.auth.hashers import check_password
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -17,6 +18,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import EmailVerificationToken, Profile
 from .serializers import ProfileSerializer
 from .utils.email import send_email_via_sendgrid
+
 
 # -------------------------------
 # REGISTER + EMAIL VERIFICATION
@@ -65,6 +67,9 @@ class RegisterView(APIView):
         return Response({"message": "Account created. Check your email."}, status=201)
 
 
+# -------------------------------
+# EMAIL VERIFICATION
+# -------------------------------
 class VerifyEmailView(APIView):
     def get(self, request):
         token = request.GET.get("token")
@@ -100,7 +105,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 
 # -------------------------------
-# PASSWORD RESET
+# PASSWORD RESET FLOW
 # -------------------------------
 class PasswordResetRequestView(APIView):
     def post(self, request):
@@ -160,7 +165,7 @@ class PasswordResetConfirmView(APIView):
 
 
 # -------------------------------
-# PROFILE VIEW (GET / UPDATE)
+# PROFILE VIEW
 # -------------------------------
 class ProfileView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
@@ -169,3 +174,26 @@ class ProfileView(RetrieveUpdateAPIView):
     def get_object(self):
         profile, _ = Profile.objects.get_or_create(user=self.request.user)
         return profile
+
+
+# -------------------------------
+# CHANGE PASSWORD (AUTH REQUIRED)
+# -------------------------------
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not new_password or not confirm_password:
+            return Response({"error": "All fields required"}, status=400)
+
+        if new_password != confirm_password:
+            return Response({"error": "Passwords do not match"}, status=400)
+
+        user.set_password(new_password)
+        user.save()
+
+        return Response({"message": "Password updated successfully"}, status=200)
