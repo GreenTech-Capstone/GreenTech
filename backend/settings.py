@@ -153,7 +153,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "apikey"
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = "greentech.hydroponic@gmail.com"
+DEFAULT_FROM_EMAIL = "jhusthine.ello@gmail.com"
 
 # ================== ALLAUTH ==================
 AUTHENTICATION_BACKENDS = (
