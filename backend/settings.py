@@ -25,7 +25,6 @@ CSRF_TRUSTED_ORIGINS = [
     'https://greentech-ud0q.onrender.com',
 ]
 
-# Mobile apps do not send Referer -> MUST disable
 SECURE_REFERRER_POLICY = "no-referrer"
 CSRF_COOKIE_SECURE = False
 CSRF_USE_SESSIONS = False
@@ -81,10 +80,11 @@ MIDDLEWARE.insert(0, 'api.middleware.DisableCSRFMiddleware')
 
 ROOT_URLCONF = 'backend.urls'
 
+# ================== FIXED TEMPLATES ==================
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],   # <<<<<<  IMPORTANT FIX
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -153,7 +153,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "apikey"
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = "jhusthine.ello@gmail.com"
+DEFAULT_FROM_EMAIL = "greentech.hydroponic@gmail.com"
 
 # ================== ALLAUTH ==================
 AUTHENTICATION_BACKENDS = (
