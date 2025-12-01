@@ -7,6 +7,7 @@ from .views import (
     PasswordResetRequestView,
     PasswordResetConfirmView,
     ProfileView,
+    ChangePasswordView,
 )
 
 urlpatterns = [
@@ -21,4 +22,7 @@ urlpatterns = [
 
     # Auth User Profile
     path("profile/", ProfileView.as_view(), name="profile"),
+
+    # Change Password (Authenticated)
+    path("change-password/", ChangePasswordView.as_view(), name="change-password"),
 ]

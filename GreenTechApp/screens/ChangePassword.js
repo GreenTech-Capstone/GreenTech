@@ -13,33 +13,48 @@ import {
   Keyboard,
   Alert,
 } from 'react-native';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BASE_URL } from '../config';
 
 export default function ChangePassword({ navigation }) {
-  const [email, setEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleResetPassword = async () => {
-    if (!email) return Alert.alert("Error", "Please enter your email");
+  const handleChangePassword = async () => {
+    if (!newPassword || !confirmPassword) {
+      return Alert.alert("Error", "Please fill in all fields.");
+    }
+
+    if (newPassword !== confirmPassword) {
+      return Alert.alert("Error", "Passwords do not match.");
+    }
 
     try {
       setLoading(true);
-      const response = await fetch(`${BASE_URL}/api/password-reset/`, {
+
+      const token = await AsyncStorage.getItem("access");
+
+      const response = await fetch(`${BASE_URL}/api/change-password/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          new_password: newPassword,
+          confirm_password: confirmPassword,
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert(
-          "Success",
-          "Password reset link sent! Check your email."
-        );
+        Alert.alert("Success", "Password changed successfully!");
         navigation.goBack();
       } else {
-        Alert.alert("Error", data.error || "Failed to send reset link");
+        Alert.alert("Error", data.error || "Password change failed");
       }
     } catch (error) {
       Alert.alert("Error", "Could not connect to server");
@@ -65,25 +80,35 @@ export default function ChangePassword({ navigation }) {
                 style={styles.logo}
                 resizeMode="contain"
               />
-              <Text style={styles.title}>Reset Password</Text>
+              <Text style={styles.title}>Change Password</Text>
             </View>
 
             <View style={styles.form}>
               <TextInput
                 style={styles.input}
-                placeholder="Enter Your Email"
-                value={email}
-                onChangeText={setEmail}
+                secureTextEntry
+                placeholder="New Password"
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholderTextColor="#2e6e4e"
+              />
+
+              <TextInput
+                style={styles.input}
+                secureTextEntry
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
                 placeholderTextColor="#2e6e4e"
               />
 
               <TouchableOpacity
                 style={styles.button}
-                onPress={handleResetPassword}
+                onPress={handleChangePassword}
                 disabled={loading}
               >
                 <Text style={styles.buttonText}>
-                  {loading ? "Sending..." : "Send Reset Link"}
+                  {loading ? "Saving..." : "Change Password"}
                 </Text>
               </TouchableOpacity>
             </View>
