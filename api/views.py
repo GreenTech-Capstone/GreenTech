@@ -1,21 +1,22 @@
 import uuid
 import os
+
 from django.contrib.auth.models import User
 from django.urls import reverse
-from django.shortcuts import render
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import RetrieveUpdateAPIView
+
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .models import EmailVerificationToken, Profile
 from .serializers import ProfileSerializer
 from .utils.email import send_email_via_sendgrid
-
 
 # -------------------------------
 # REGISTER + EMAIL VERIFICATION
@@ -44,7 +45,6 @@ class RegisterView(APIView):
 
         app_scheme = os.getenv("MOBILE_APP_SCHEME", "greentechapp")
         app_link = f"{app_scheme}://verify-email/{token}"
-
         web_domain = os.getenv("RENDER_DOMAIN", "greentech-ud0q.onrender.com")
         web_link = f"https://{web_domain}{reverse('verify-email')}?token={token}"
 
@@ -65,31 +65,23 @@ class RegisterView(APIView):
         return Response({"message": "Account created. Check your email."}, status=201)
 
 
-# -------------------------------
-# VERIFY EMAIL (RENDER HTML PAGE)
-# -------------------------------
 class VerifyEmailView(APIView):
     def get(self, request):
         token = request.GET.get("token")
-
         if not token:
-            return Response({"error": "Token missing"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Token missing"}, status=400)
 
         try:
             record = EmailVerificationToken.objects.get(token=token)
         except EmailVerificationToken.DoesNotExist:
-            return Response({"error": "Invalid/expired token"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid/expired token"}, status=400)
 
-        # Activate user
         user = record.user
         user.is_active = True
         user.save()
-
-        # Delete used token
         record.delete()
 
-        # Render custom success page
-        return render(request, "verify_email_success.html")
+        return Response({"message": "Email verified successfully."}, status=200)
 
 
 # -------------------------------
@@ -126,7 +118,6 @@ class PasswordResetRequestView(APIView):
 
         app_scheme = os.getenv("MOBILE_APP_SCHEME", "greentechapp")
         app_link = f"{app_scheme}://reset-password/{token}"
-
         web_domain = os.getenv("RENDER_DOMAIN", "greentech-ud0q.onrender.com")
         web_link = f"https://{web_domain}{reverse('password-reset-confirm')}?token={token}"
 
@@ -163,14 +154,13 @@ class PasswordResetConfirmView(APIView):
         user = record.user
         user.set_password(new_password)
         user.save()
-
         record.delete()
 
         return Response({"message": "Password reset successful"}, status=200)
 
 
 # -------------------------------
-# PROFILE VIEW
+# PROFILE VIEW (GET / UPDATE)
 # -------------------------------
 class ProfileView(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
