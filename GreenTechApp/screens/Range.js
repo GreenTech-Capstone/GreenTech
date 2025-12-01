@@ -14,7 +14,7 @@ export default function Range({ navigation, route }) {
     ],
     humidity: [
       { level: 'Low', value: '40–50 %', notes: 'May cause leaf wilting', color: 'red' },
-      { level: 'Normal', value: '60–70 %', notes: 'Ideal for leaf expansion', color: 'green' },
+      { level: 'Normal', value: '60–80 %', notes: 'Ideal for leaf expansion', color: 'green' },
       { level: 'High', value: '80–85 %', notes: 'Risk of fungal issues', color: 'blue' },
       { level: 'Max', value: '90 %', notes: 'Poor transpiration, disease risk', color: 'orange' },
     ],
@@ -26,7 +26,7 @@ export default function Range({ navigation, route }) {
     ],
     ec_voltage: [
       { level: 'Low', value: '0.8 mS/cm', notes: 'May cause nutrient deficiency', color: 'red' },
-      { level: 'Normal', value: '1.2–2.0 mS/cm', notes: 'Good growth', color: 'green' },
+      { level: 'Normal', value: '1.5–2.5 mS/cm', notes: 'Good growth', color: 'green' },
       { level: 'High', value: '2.5–3.0 mS/cm', notes: 'Risk of salt stress', color: 'blue' },
       { level: 'Max', value: '3.5 mS/cm', notes: 'Growth severely inhibited', color: 'orange' },
     ],

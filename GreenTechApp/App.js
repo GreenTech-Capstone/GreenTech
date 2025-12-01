@@ -19,6 +19,9 @@ import Profile from './screens/Profile';
 import ChangePassword from './screens/ChangePassword';
 import ResetPasswordConfirm from './screens/ResetPasswordConfirm';
 import About from './screens/About';
+import HowToUseApp from './screens/HowToUseApp';
+import HowToGrowKangkong from './screens/HowToGrowKangkong';
+import HowToBuildNFT from './screens/HowToBuildNFT';
 
 // Keep splash visible while loading
 SplashScreen.preventAutoHideAsync();
@@ -44,6 +47,9 @@ const linking = {
       ChangePassword: 'reset-request',
       ResetPasswordConfirm: 'reset-password/:token',
       About: 'about',
+      HowToUseApp: 'how-to-use-app',
+      HowToGrowKangkong: 'how-to-grow-kangkong',
+      HowToBuildNFT: 'how-to-build-nft',
     },
   },
 };
@@ -100,6 +106,11 @@ export default function App() {
         <Stack.Screen name="ChangePassword" component={ChangePassword} />
         <Stack.Screen name="ResetPasswordConfirm" component={ResetPasswordConfirm} />
         <Stack.Screen name="About" component={About} />
+
+        {/* HowTo Screens */}
+        <Stack.Screen name="HowToUseApp" component={HowToUseApp} />
+        <Stack.Screen name="HowToGrowKangkong" component={HowToGrowKangkong} />
+        <Stack.Screen name="HowToBuildNFT" component={HowToBuildNFT} />
 
       </Stack.Navigator>
     </NavigationContainer>
