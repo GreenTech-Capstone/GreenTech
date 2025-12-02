@@ -22,6 +22,7 @@ import About from './screens/About';
 import HowToUseApp from './screens/HowToUseApp';
 import HowToGrowKangkong from './screens/HowToGrowKangkong';
 import HowToBuildNFT from './screens/HowToBuildNFT';
+import OtherHydroponicPlants from './screens/OtherHydroponicPlants';
 
 // Keep splash visible while loading
 SplashScreen.preventAutoHideAsync();
@@ -111,6 +112,7 @@ export default function App() {
         <Stack.Screen name="HowToUseApp" component={HowToUseApp} />
         <Stack.Screen name="HowToGrowKangkong" component={HowToGrowKangkong} />
         <Stack.Screen name="HowToBuildNFT" component={HowToBuildNFT} />
+        <Stack.Screen name="OtherHydroponicPlants" component={OtherHydroponicPlants} />
 
       </Stack.Navigator>
     </NavigationContainer>
