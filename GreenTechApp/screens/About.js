@@ -52,6 +52,14 @@ export default function About({ navigation }) {
         >
           <Text style={styles.buttonText}>How to Build a NFT Setup</Text>
         </TouchableOpacity>
+
+        {/* ✅ NEW BUTTON BELOW */}
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate('OtherHydroponicPlants')}
+        >
+          <Text style={styles.buttonText}>Other Hydroponic Plants</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
