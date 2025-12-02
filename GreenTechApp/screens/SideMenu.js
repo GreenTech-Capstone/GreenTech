@@ -26,7 +26,7 @@ export default function SideMenu({ visible, onClose, navigation }) {
     };
 
     if (visible) {
-      fetchUsername(); // Load username only when the menu is visible
+      fetchUsername();
     }
   }, [visible]);
 
@@ -52,20 +52,14 @@ export default function SideMenu({ visible, onClose, navigation }) {
               source={require('../assets/logo.png')}
               style={styles.logo}
             />
-            <Text style={styles.username}>{username}</Text>
+
+            {/* ADDED "Hi!" before username */}
+            <Text style={styles.username}>Hi! {username}</Text>
           </View>
 
           <View style={styles.menuSection}>
-            <TouchableOpacity
-              style={styles.menuItem}
-              onPress={() => {
-                onClose();
-                navigation.navigate('Profile');
-              }}
-            >
-              <MaterialIcons name="person" size={24} color="#dbf7c5" />
-              <Text style={styles.menuText}>Profile Info</Text>
-            </TouchableOpacity>
+
+            {/* Profile Info REMOVED — layout kept exactly the same */}
 
             <TouchableOpacity
               style={styles.menuItem}
@@ -122,12 +116,12 @@ const styles = StyleSheet.create({
     paddingVertical: 30,
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: 110,   // ⬆ Bigger logo
+    height: 110,  // ⬆ Bigger logo
     marginBottom: 10,
   },
   username: {
-    fontSize: 18,
+    fontSize: 20,
     color: '#05542f',
     fontWeight: 'bold',
   },
