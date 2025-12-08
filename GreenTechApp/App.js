@@ -1,9 +1,12 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Font from 'expo-font';
 import * as Linking from 'expo-linking';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
 
 // Import Screens
 import LoginScreen from './screens/LoginScreen';
@@ -14,7 +17,7 @@ import AuthScreen from './screens/AuthScreen';
 import Alerts from './screens/Alerts';
 import History from './screens/History';
 import Range from './screens/Range';
-import Notifications from './screens/Notifications';
+import NotificationsScreen from './screens/Notifications';
 import Profile from './screens/Profile';
 import ChangePassword from './screens/ChangePassword';
 import ResetPasswordConfirm from './screens/ResetPasswordConfirm';
@@ -24,12 +27,22 @@ import HowToGrowKangkong from './screens/HowToGrowKangkong';
 import HowToBuildNFT from './screens/HowToBuildNFT';
 import OtherHydroponicPlants from './screens/OtherHydroponicPlants';
 
-// Keep splash visible while loading
-SplashScreen.preventAutoHideAsync();
+// Import the new notification setup file
+import { registerForPushNotificationsAsync } from './notifications';
 
+// Push Notification Settings
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
+SplashScreen.preventAutoHideAsync();
 const Stack = createNativeStackNavigator();
 
-// Deep linking configuration
+// Deep linking
 const prefix = Linking.createURL('/');
 const linking = {
   prefixes: ['myapp://', prefix],
@@ -57,6 +70,8 @@ const linking = {
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
 
   useEffect(() => {
     async function prepare() {
@@ -64,13 +79,38 @@ export default function App() {
         await Font.loadAsync({
           TimesNewRoman: require('./assets/fonts/times-new-roman.ttf'),
         });
+
+        // Register device for push notifications
+        await registerForPushNotificationsAsync();
+
+        // Foreground notifications listener
+        notificationListener.current =
+          Notifications.addNotificationReceivedListener(notification => {
+            console.log("Notification Received:", notification);
+          });
+
+        // When user taps a notification
+        responseListener.current =
+          Notifications.addNotificationResponseReceivedListener(response => {
+            console.log("Notification Clicked:", response);
+          });
+
       } catch (e) {
-        console.warn('Font loading error:', e);
+        console.warn('Error:', e);
       } finally {
         setAppIsReady(true);
       }
     }
+
     prepare();
+
+    return () => {
+      if (notificationListener.current)
+        Notifications.removeNotificationListener(notificationListener.current);
+
+      if (responseListener.current)
+        Notifications.removeNotificationListener(responseListener.current);
+    };
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
@@ -83,32 +123,25 @@ export default function App() {
     <NavigationContainer linking={linking} onReady={onLayoutRootView}>
       <Stack.Navigator initialRouteName="GetStarted" screenOptions={{ headerShown: false }}>
 
-        {/* Start Screens */}
         <Stack.Screen name="GetStarted" component={GetStarted} />
         <Stack.Screen name="AuthScreen" component={AuthScreen} />
 
-        {/* Auth Screens */}
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
 
-        {/* Main Dashboard */}
         <Stack.Screen name="Dashboard" component={Dashboard} />
 
-        {/* Parameter Pages */}
         <Stack.Screen name="Alerts" component={Alerts} />
         <Stack.Screen name="History" component={History} />
         <Stack.Screen name="Range" component={Range} />
 
-        {/* Other Screens */}
-        <Stack.Screen name="Notifications" component={Notifications} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
 
-        {/* Sidebar Menu Screens */}
         <Stack.Screen name="Profile" component={Profile} />
         <Stack.Screen name="ChangePassword" component={ChangePassword} />
         <Stack.Screen name="ResetPasswordConfirm" component={ResetPasswordConfirm} />
         <Stack.Screen name="About" component={About} />
 
-        {/* HowTo Screens */}
         <Stack.Screen name="HowToUseApp" component={HowToUseApp} />
         <Stack.Screen name="HowToGrowKangkong" component={HowToGrowKangkong} />
         <Stack.Screen name="HowToBuildNFT" component={HowToBuildNFT} />

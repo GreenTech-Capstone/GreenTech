@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "674070394388",
+    "project_id": "greentechapp-e5612",
+    "storage_bucket": "greentechapp-e5612.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674070394388:android:c368e3716f7b3b55775901",
+        "android_client_info": {
+          "package_name": "com.jstne.GreenTechApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBT9erClWwQzuP5eWpdJkcdkYm9IMJ1lTw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

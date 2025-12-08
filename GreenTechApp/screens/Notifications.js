@@ -10,10 +10,11 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Notifications from 'expo-notifications';
 import SideMenu from './SideMenu';
 import { supabase } from './supabase';
 
-export default function Notifications({ navigation }) {
+export default function NotificationsScreen({ navigation }) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,10 +27,20 @@ export default function Notifications({ navigation }) {
     { name: 'Nutrients', key: 'ec_voltage', min: 1.2, max: 2.0 },
   ];
 
+  const sendPush = async (title, body) => {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        sound: true,
+      },
+      trigger: null,
+    });
+  };
+
   const fetchAlerts = async () => {
     setLoading(true);
     try {
-      // Fetch the latest sensor reading
       const { data, error } = await supabase
         .from('sensor_readings')
         .select('*')
@@ -37,30 +48,29 @@ export default function Notifications({ navigation }) {
         .limit(1);
 
       if (error) throw error;
-      if (!data || data.length === 0) return;
+      if (!data?.length) return;
 
       const latest = data[0];
 
-      // Format date and time
-      const timestamp = new Date(latest.created_at);
-      const formattedTime = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-      const formattedDate = timestamp.toLocaleDateString();
+      const time = new Date(latest.created_at).toLocaleTimeString();
+      const date = new Date(latest.created_at).toLocaleDateString();
 
-      // Generate alerts dynamically for all parameters
       const newAlerts = parameters.map((param, idx) => {
         const value = latest[param.key];
-        let status = 'info';
-        let message = `${param.name} is within ideal range.`;
-        let tip = `Maintain current conditions.`;
+        let status = "info";
+        let message = `${param.name} is normal`;
+        let tip = `All good`;
 
         if (value < param.min) {
-          status = 'warning';
-          message = `${param.name} is too low! Current: ${value}`;
-          tip = `Increase ${param.name.toLowerCase()} to reach ideal range (${param.min}–${param.max}).`;
+          status = "warning";
+          message = `${param.name} too low!`;
+          tip = `Increase ${param.name}`;
+          sendPush(`${param.name} Warning`, `${param.name} is too low! Affected value: ${value}`);
         } else if (value > param.max) {
-          status = 'alert';
-          message = `${param.name} is too high! Current: ${value}`;
-          tip = `Reduce ${param.name.toLowerCase()} to reach ideal range (${param.min}–${param.max}).`;
+          status = "alert";
+          message = `${param.name} too high!`;
+          tip = `Reduce ${param.name}`;
+          sendPush(`${param.name} Alert`, `${param.name} is too high! Current: ${value}`);
         }
 
         return {
@@ -69,14 +79,14 @@ export default function Notifications({ navigation }) {
           status,
           message,
           tip,
-          date: formattedDate,
-          time: formattedTime,
+          date,
+          time,
         };
       });
 
       setAlerts(newAlerts);
-    } catch (err) {
-      console.error('Error fetching alerts:', err.message);
+    } catch (e) {
+      console.log("Alert Error:", e.message);
     } finally {
       setLoading(false);
     }
@@ -87,39 +97,13 @@ export default function Notifications({ navigation }) {
 
     const channel = supabase
       .channel('sensor_updates')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'sensor_readings' },
-        () => fetchAlerts()
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'sensor_readings' }, () => {
+        fetchAlerts();
+      })
       .subscribe();
 
     return () => supabase.removeChannel(channel);
   }, []);
-
-  const getStatusElement = (status) => {
-    switch (status) {
-      case 'warning':
-        return <View style={styles.yellowCircle} />;
-      case 'alert':
-        return <View style={styles.redCircle} />;
-      case 'danger':
-        return (
-          <Image source={require('../assets/dangericon.png')} style={styles.dangerIcon} />
-        );
-      default:
-        return <View style={styles.grayCircle} />;
-    }
-  };
-
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#006837" />
-        <Text>Loading alerts...</Text>
-      </View>
-    );
-  }
 
   return (
     <ImageBackground
@@ -127,85 +111,56 @@ export default function Notifications({ navigation }) {
       style={styles.background}
       resizeMode="cover"
     >
+
       <View style={styles.headerRow}>
         <Image source={require('../assets/logo.png')} style={styles.logo} />
         <Text style={styles.headerText}>Notifications</Text>
       </View>
 
-      <View style={styles.notificationBox}>
-        <Image source={require('../assets/notifleaf.png')} style={styles.leafIcon} />
-        <ScrollView contentContainerStyle={styles.alertList}>
-          {alerts.map((alert) => (
-            <View key={alert.id} style={styles.alertCard}>
-              <View style={styles.statusIconWrapper}>
-                {getStatusElement(alert.status)}
-              </View>
-              <View style={styles.alertContent}>
-                <Text style={styles.paramName}>{alert.param}</Text>
-                <Text style={styles.alertText}>{alert.message}</Text>
-                <View style={styles.tipRow}>
-                  <Image source={require('../assets/tip.png')} style={styles.tipIcon} />
-                  <Text style={styles.tipText}>Tip: {alert.tip}</Text>
-                </View>
-                <Text style={styles.timestampText}>{alert.date} {alert.time}</Text>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <View style={styles.navWrapper}>
-          <TouchableOpacity onPress={() => setMenuVisible(true)}>
-            <MaterialIcons name="menu" size={32} color="#05542f" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() =>
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Dashboard' }],
-              })
-            }
-          >
-            <MaterialIcons name="home" size={32} color="#05542f" />
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
-            <MaterialIcons name="notifications" size={32} color="#05542f" />
-          </TouchableOpacity>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#006837" />
         </View>
+      ) : (
+        <View style={styles.notificationBox}>
+          <ScrollView contentContainerStyle={styles.alertList}>
+            {alerts.map((alert) => (
+              <View key={alert.id} style={styles.alertCard}>
+                <Text style={{ color: "#fff", fontWeight: "bold" }}>{alert.param}</Text>
+                <Text style={{ color: "#fff" }}>{alert.message}</Text>
+                <Text style={{ color: "#eee", fontStyle: "italic" }}>
+                  {alert.date} {alert.time}
+                </Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
+      <View style={styles.bottomNav}>
+        <TouchableOpacity onPress={() => setMenuVisible(true)}>
+          <MaterialIcons name="menu" size={32} color="#05542f" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] })}>
+          <MaterialIcons name="home" size={32} color="#05542f" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+          <MaterialIcons name="notifications" size={32} color="#05542f" />
+        </TouchableOpacity>
       </View>
 
-      {/* Side Menu */}
-      <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} username="USERNAME" navigation={navigation} />
+      <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} navigation={navigation} />
+
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   background: { flex: 1, paddingTop: 60 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 30, marginTop: 30 },
+  headerRow: { flexDirection: 'row', paddingHorizontal: 20 },
   logo: { width: 80, height: 80, marginRight: 10 },
   headerText: { fontSize: 40, fontWeight: 'bold', color: '#05542f' },
-  notificationBox: { flex: 1, marginHorizontal: 20, backgroundColor: '#c6e4af', borderRadius: 20, paddingTop: 20, paddingBottom: 1, paddingHorizontal: 20, position: 'relative' },
-  leafIcon: { width: 120, height: 120, position: 'absolute', top: -90, right: -15 },
-  alertList: { paddingBottom: 30 },
-  alertCard: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: 'rgba(80, 165, 97, 0.8)', padding: 16, borderRadius: 30, marginBottom: 12 },
-  statusIconWrapper: { width: 20, alignItems: 'center', justifyContent: 'flex-start' },
-  redCircle: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#cf3107', marginTop: 4 },
-  yellowCircle: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#FFD700', marginTop: 4 },
-  dangerIcon: { width: 18, height: 18, marginTop: 2 },
-  grayCircle: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#aaa', marginTop: 4 },
-  alertContent: { flex: 1, paddingLeft: 10, paddingRight: 16 },
-  paramName: { fontSize: 16, fontWeight: 'bold', color: '#05542f' },
-  alertText: { fontSize: 14, color: '#05542f', marginTop: 4 },
-  tipRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 4 },
-  tipIcon: { width: 16, height: 16, marginTop: 2, marginRight: 4 },
-  tipText: { fontSize: 13, color: '#444', fontStyle: 'italic', flex: 1, flexWrap: 'wrap' },
-  timestampText: { fontSize: 12, color: '#333', marginTop: 4, fontStyle: 'italic' },
-  bottomNav: { position: 'absolute', bottom: -10, left: 0, right: 0, alignItems: 'center' },
-  navWrapper: { flexDirection: 'row', justifyContent: 'space-between', width: 380, paddingVertical: 50, paddingHorizontal: 50, elevation: 5 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  notificationBox: { flex: 1, margin: 20, backgroundColor: '#c6e4af', padding: 20, borderRadius: 20 },
+  alertCard: { padding: 15, backgroundColor: "#4a9f58", borderRadius: 15, marginBottom: 10 },
+  bottomNav: { position: "absolute", bottom: 30, flexDirection: "row", justifyContent: "space-around", width: "100%" }
 });
