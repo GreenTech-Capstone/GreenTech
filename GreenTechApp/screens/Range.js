@@ -7,33 +7,33 @@ export default function Range({ navigation, route }) {
 
   const rangesData = {
     temperature: [
-      { level: 'Low', value: '15–18 °C', notes: 'Growth slows', color: 'red' },
+      { level: 'Low', value: '15–18 °C', notes: 'Growth slows', color: 'yellow' },
       { level: 'Normal', value: '22–28 °C', notes: 'Best growth', color: 'green' },
-      { level: 'High', value: '30–35 °C', notes: 'Stress, slower growth', color: 'blue' },
+      { level: 'High', value: '30–35 °C', notes: 'Stress, slower growth', color: 'red' },
       { level: 'Max', value: '38 °C', notes: 'Leaves may burn', color: 'orange' },
     ],
     humidity: [
-      { level: 'Low', value: '40–50 %', notes: 'May cause leaf wilting', color: 'red' },
+      { level: 'Low', value: '40–50 %', notes: 'May cause leaf wilting', color: 'yellow' },
       { level: 'Normal', value: '60–80 %', notes: 'Ideal for leaf expansion', color: 'green' },
-      { level: 'High', value: '80–85 %', notes: 'Risk of fungal issues', color: 'blue' },
+      { level: 'High', value: '80–85 %', notes: 'Risk of fungal issues', color: 'red' },
       { level: 'Max', value: '90 %', notes: 'Poor transpiration, disease risk', color: 'orange' },
     ],
     ph_voltage: [
-      { level: 'Low', value: '5.0', notes: 'Nutrient uptake begins to be limited', color: 'red' },
+      { level: 'Low', value: '5.0', notes: 'Nutrient uptake begins to be limited', color: 'yellow' },
       { level: 'Normal', value: '5.5–6.5', notes: 'Ideal for most nutrients', color: 'green' },
-      { level: 'High', value: '7.0', notes: 'Some nutrients like Fe less available', color: 'blue' },
+      { level: 'High', value: '7.0', notes: 'Some nutrients like Fe less available', color: 'red' },
       { level: 'Max', value: '7.5', notes: 'Severe nutrient deficiency', color: 'orange' },
     ],
     ec_voltage: [
-      { level: 'Low', value: '0.8 mS/cm', notes: 'May cause nutrient deficiency', color: 'red' },
+      { level: 'Low', value: '0.8 mS/cm', notes: 'May cause nutrient deficiency', color: 'yellow' },
       { level: 'Normal', value: '1.5–2.5 mS/cm', notes: 'Good growth', color: 'green' },
-      { level: 'High', value: '2.5–3.0 mS/cm', notes: 'Risk of salt stress', color: 'blue' },
+      { level: 'High', value: '2.5–3.0 mS/cm', notes: 'Risk of salt stress', color: 'red' },
       { level: 'Max', value: '3.5 mS/cm', notes: 'Growth severely inhibited', color: 'orange' },
     ],
     distance_cm: [
-      { level: 'Low', value: '5–10 cm', notes: 'Crowding, poor aeration', color: 'red' },
+      { level: 'Low', value: '5–10 cm', notes: 'Crowding, poor aeration', color: 'yellow' },
       { level: 'Normal', value: '10–15 cm', notes: 'Best growth', color: 'green' },
-      { level: 'High', value: '15–20 cm', notes: 'May reduce yield per area', color: 'blue' },
+      { level: 'High', value: '15–20 cm', notes: 'May reduce yield per area', color: 'red' },
       { level: 'Max', value: '25 cm', notes: 'Too sparse, inefficient space use', color: 'orange' },
     ],
   };

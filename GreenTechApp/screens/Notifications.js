@@ -41,6 +41,11 @@ export default function Notifications({ navigation }) {
 
       const latest = data[0];
 
+      // Format date and time
+      const timestamp = new Date(latest.created_at);
+      const formattedTime = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const formattedDate = timestamp.toLocaleDateString();
+
       // Generate alerts dynamically for all parameters
       const newAlerts = parameters.map((param, idx) => {
         const value = latest[param.key];
@@ -58,7 +63,15 @@ export default function Notifications({ navigation }) {
           tip = `Reduce ${param.name.toLowerCase()} to reach ideal range (${param.min}–${param.max}).`;
         }
 
-        return { id: idx + 1, param: param.name, status, message, tip };
+        return {
+          id: idx + 1,
+          param: param.name,
+          status,
+          message,
+          tip,
+          date: formattedDate,
+          time: formattedTime,
+        };
       });
 
       setAlerts(newAlerts);
@@ -72,7 +85,6 @@ export default function Notifications({ navigation }) {
   useEffect(() => {
     fetchAlerts();
 
-    // Optional: set up a real-time subscription for new sensor data
     const channel = supabase
       .channel('sensor_updates')
       .on(
@@ -135,6 +147,7 @@ export default function Notifications({ navigation }) {
                   <Image source={require('../assets/tip.png')} style={styles.tipIcon} />
                   <Text style={styles.tipText}>Tip: {alert.tip}</Text>
                 </View>
+                <Text style={styles.timestampText}>{alert.date} {alert.time}</Text>
               </View>
             </View>
           ))}
@@ -191,6 +204,7 @@ const styles = StyleSheet.create({
   tipRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 4 },
   tipIcon: { width: 16, height: 16, marginTop: 2, marginRight: 4 },
   tipText: { fontSize: 13, color: '#444', fontStyle: 'italic', flex: 1, flexWrap: 'wrap' },
+  timestampText: { fontSize: 12, color: '#333', marginTop: 4, fontStyle: 'italic' },
   bottomNav: { position: 'absolute', bottom: -10, left: 0, right: 0, alignItems: 'center' },
   navWrapper: { flexDirection: 'row', justifyContent: 'space-between', width: 380, paddingVertical: 50, paddingHorizontal: 50, elevation: 5 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
