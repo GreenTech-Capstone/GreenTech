@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib.auth.hashers import check_password
 
+from django.shortcuts import render
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -68,25 +70,30 @@ class RegisterView(APIView):
 
 
 # -------------------------------
-# EMAIL VERIFICATION
+# EMAIL VERIFY (HTML PAGE RENDER)
 # -------------------------------
 class VerifyEmailView(APIView):
     def get(self, request):
         token = request.GET.get("token")
+
         if not token:
-            return Response({"error": "Token missing"}, status=400)
+            return render(request, "verify_success.html", {
+                "error": "Token missing"
+            })
 
         try:
             record = EmailVerificationToken.objects.get(token=token)
         except EmailVerificationToken.DoesNotExist:
-            return Response({"error": "Invalid/expired token"}, status=400)
+            return render(request, "verify_success.html", {
+                "error": "Invalid or expired verification link."
+            })
 
         user = record.user
         user.is_active = True
         user.save()
         record.delete()
 
-        return Response({"message": "Email verified successfully."}, status=200)
+        return render(request, "verify_success.html", {})
 
 
 # -------------------------------
