@@ -10,39 +10,26 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import * as Notifications from 'expo-notifications';
 import SideMenu from './SideMenu';
 import { supabase } from './supabase';
 
-// =======================================
-// PARAMETER RANGES (aligned with Dashboard)
-// =======================================
-const parameters = [
-  { name: 'Air Temp', key: 'temperature', min: 22, max: 28 },
-  { name: 'Water Level', key: 'distance_cm', min: 10, max: 15 },  // distance: HIGH = LOW WATER
-  { name: 'Humidity', key: 'humidity', min: 60, max: 70 },
-  { name: 'pH Level', key: 'ph_voltage', min: 5.5, max: 6.5 },
-  { name: 'Nutrients (EC)', key: 'ec_voltage', min: 1.2, max: 2.0 },
-];
-
-export default function NotificationsScreen({ navigation }) {
+export default function Notifications({ navigation }) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ===== PUSH Notifications =====
-  const sendPush = async (title, body) => {
-    await Notifications.scheduleNotificationAsync({
-      content: { title, body, sound: true },
-      trigger: null,
-    });
-  };
+  const parameters = [
+    { name: 'Air Temp', key: 'temperature', min: 22, max: 28 },
+    { name: 'Water Temp', key: 'distance_cm', min: 10, max: 15 },
+    { name: 'Humidity', key: 'humidity', min: 60, max: 70 },
+    { name: 'pH Level', key: 'ph_voltage', min: 5.5, max: 6.5 },
+    { name: 'Nutrients', key: 'ec_voltage', min: 1.2, max: 2.0 },
+  ];
 
-  // ===== Fetch Latest Readings + Generate Alerts =====
   const fetchAlerts = async () => {
     setLoading(true);
-
     try {
+      // Fetch the latest sensor reading
       const { data, error } = await supabase
         .from('sensor_readings')
         .select('*')
@@ -50,53 +37,30 @@ export default function NotificationsScreen({ navigation }) {
         .limit(1);
 
       if (error) throw error;
-      if (!data?.length) return;
+      if (!data || data.length === 0) return;
 
       const latest = data[0];
 
-      const time = new Date(latest.created_at).toLocaleTimeString();
-      const date = new Date(latest.created_at).toLocaleDateString();
+      // Format date and time
+      const timestamp = new Date(latest.created_at);
+      const formattedTime = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      const formattedDate = timestamp.toLocaleDateString();
 
+      // Generate alerts dynamically for all parameters
       const newAlerts = parameters.map((param, idx) => {
         const value = latest[param.key];
-        let status = "info";
-        let message = `${param.name} is normal`;
-        let tip = "All good";
+        let status = 'info';
+        let message = `${param.name} is within ideal range.`;
+        let tip = `Maintain current conditions.`;
 
-        // ============================
-        // FIXED: Water Level Logic
-        // distance_cm HIGH = low water
-        // distance_cm LOW  = overflowing
-        // ============================
-        if (param.key === 'distance_cm') {
-          if (value > param.max) {
-            status = "warning";
-            message = "Water Level LOW!";
-            tip = "Add more water";
-            sendPush("Water Level Warning", `Water level is LOW (distance: ${value}cm)`);
-          } else if (value < param.min) {
-            status = "alert";
-            message = "Water Level HIGH!";
-            tip = "Water may overflow";
-            sendPush("Water Level Alert", `Water level is TOO HIGH (distance: ${value}cm)`);
-          }
-        } 
-        
-        // ============================
-        // Normal logic for all others
-        // ============================
-        else {
-          if (value < param.min) {
-            status = "warning";
-            message = `${param.name} too low!`;
-            tip = `Increase ${param.name}`;
-            sendPush(`${param.name} Warning`, `${param.name} is too low! Value: ${value}`);
-          } else if (value > param.max) {
-            status = "alert";
-            message = `${param.name} too high!`;
-            tip = `Reduce ${param.name}`;
-            sendPush(`${param.name} Alert`, `${param.name} is too high! Value: ${value}`);
-          }
+        if (value < param.min) {
+          status = 'warning';
+          message = `${param.name} is too low! Current: ${value}`;
+          tip = `Increase ${param.name.toLowerCase()} to reach ideal range (${param.min}–${param.max}).`;
+        } else if (value > param.max) {
+          status = 'alert';
+          message = `${param.name} is too high! Current: ${value}`;
+          tip = `Reduce ${param.name.toLowerCase()} to reach ideal range (${param.min}–${param.max}).`;
         }
 
         return {
@@ -105,21 +69,19 @@ export default function NotificationsScreen({ navigation }) {
           status,
           message,
           tip,
-          date,
-          time,
+          date: formattedDate,
+          time: formattedTime,
         };
       });
 
       setAlerts(newAlerts);
-
-    } catch (e) {
-      console.log("Alert Error:", e.message);
+    } catch (err) {
+      console.error('Error fetching alerts:', err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // ===== Real-time subscription =====
   useEffect(() => {
     fetchAlerts();
 
@@ -135,6 +97,30 @@ export default function NotificationsScreen({ navigation }) {
     return () => supabase.removeChannel(channel);
   }, []);
 
+  const getStatusElement = (status) => {
+    switch (status) {
+      case 'warning':
+        return <View style={styles.yellowCircle} />;
+      case 'alert':
+        return <View style={styles.redCircle} />;
+      case 'danger':
+        return (
+          <Image source={require('../assets/dangericon.png')} style={styles.dangerIcon} />
+        );
+      default:
+        return <View style={styles.grayCircle} />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#006837" />
+        <Text>Loading alerts...</Text>
+      </View>
+    );
+  }
+
   return (
     <ImageBackground
       source={require('../assets/notifbackground.png')}
@@ -146,89 +132,80 @@ export default function NotificationsScreen({ navigation }) {
         <Text style={styles.headerText}>Notifications</Text>
       </View>
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#006837" />
-        </View>
-      ) : (
-        <View style={styles.notificationBox}>
-          <ScrollView contentContainerStyle={styles.alertList}>
-            {alerts.map((alert) => (
-              <View key={alert.id} style={styles.alertCard}>
-                <Text style={{ color: "#fff", fontWeight: "bold" }}>{alert.param}</Text>
-                <Text style={{ color: "#fff" }}>{alert.message}</Text>
-                <Text style={{ color: "#eee", fontStyle: "italic" }}>
-                  {alert.date} {alert.time}
-                </Text>
+      <View style={styles.notificationBox}>
+        <Image source={require('../assets/notifleaf.png')} style={styles.leafIcon} />
+        <ScrollView contentContainerStyle={styles.alertList}>
+          {alerts.map((alert) => (
+            <View key={alert.id} style={styles.alertCard}>
+              <View style={styles.statusIconWrapper}>
+                {getStatusElement(alert.status)}
               </View>
-            ))}
-          </ScrollView>
-        </View>
-      )}
+              <View style={styles.alertContent}>
+                <Text style={styles.paramName}>{alert.param}</Text>
+                <Text style={styles.alertText}>{alert.message}</Text>
+                <View style={styles.tipRow}>
+                  <Image source={require('../assets/tip.png')} style={styles.tipIcon} />
+                  <Text style={styles.tipText}>Tip: {alert.tip}</Text>
+                </View>
+                <Text style={styles.timestampText}>{alert.date} {alert.time}</Text>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      </View>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
-        <TouchableOpacity onPress={() => setMenuVisible(true)}>
-          <MaterialIcons name="menu" size={32} color="#05542f" />
-        </TouchableOpacity>
+        <View style={styles.navWrapper}>
+          <TouchableOpacity onPress={() => setMenuVisible(true)}>
+            <MaterialIcons name="menu" size={32} color="#05542f" />
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() =>
-            navigation.reset({ index: 0, routes: [{ name: 'Dashboard' }] })
-          }
-        >
-          <MaterialIcons name="home" size={32} color="#05542f" />
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Dashboard' }],
+              })
+            }
+          >
+            <MaterialIcons name="home" size={32} color="#05542f" />
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
-          <MaterialIcons name="notifications" size={32} color="#05542f" />
-        </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Notifications')}>
+            <MaterialIcons name="notifications" size={32} color="#05542f" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <SideMenu
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
-        navigation={navigation}
-      />
+      {/* Side Menu */}
+      <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} username="USERNAME" navigation={navigation} />
     </ImageBackground>
   );
 }
 
-// =======================================
-// STYLES
-// =======================================
 const styles = StyleSheet.create({
   background: { flex: 1, paddingTop: 60 },
-  headerRow: { flexDirection: 'row', paddingHorizontal: 20 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 30, marginTop: 30 },
   logo: { width: 80, height: 80, marginRight: 10 },
   headerText: { fontSize: 40, fontWeight: 'bold', color: '#05542f' },
-
-  notificationBox: {
-    flex: 1,
-    margin: 20,
-    backgroundColor: '#c6e4af',
-    padding: 20,
-    borderRadius: 20,
-  },
-
-  alertCard: {
-    padding: 15,
-    backgroundColor: "#4a9f58",
-    borderRadius: 15,
-    marginBottom: 10,
-  },
-
-  bottomNav: {
-    position: "absolute",
-    bottom: 30,
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
-  },
-
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  notificationBox: { flex: 1, marginHorizontal: 20, backgroundColor: '#c6e4af', borderRadius: 20, paddingTop: 20, paddingBottom: 1, paddingHorizontal: 20, position: 'relative' },
+  leafIcon: { width: 120, height: 120, position: 'absolute', top: -90, right: -15 },
+  alertList: { paddingBottom: 30 },
+  alertCard: { flexDirection: 'row', alignItems: 'flex-start', backgroundColor: 'rgba(80, 165, 97, 0.8)', padding: 16, borderRadius: 30, marginBottom: 12 },
+  statusIconWrapper: { width: 20, alignItems: 'center', justifyContent: 'flex-start' },
+  redCircle: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#cf3107', marginTop: 4 },
+  yellowCircle: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#FFD700', marginTop: 4 },
+  dangerIcon: { width: 18, height: 18, marginTop: 2 },
+  grayCircle: { width: 16, height: 16, borderRadius: 8, backgroundColor: '#aaa', marginTop: 4 },
+  alertContent: { flex: 1, paddingLeft: 10, paddingRight: 16 },
+  paramName: { fontSize: 16, fontWeight: 'bold', color: '#05542f' },
+  alertText: { fontSize: 14, color: '#05542f', marginTop: 4 },
+  tipRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 4 },
+  tipIcon: { width: 16, height: 16, marginTop: 2, marginRight: 4 },
+  tipText: { fontSize: 13, color: '#444', fontStyle: 'italic', flex: 1, flexWrap: 'wrap' },
+  timestampText: { fontSize: 12, color: '#333', marginTop: 4, fontStyle: 'italic' },
+  bottomNav: { position: 'absolute', bottom: -10, left: 0, right: 0, alignItems: 'center' },
+  navWrapper: { flexDirection: 'row', justifyContent: 'space-between', width: 380, paddingVertical: 50, paddingHorizontal: 50, elevation: 5 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
