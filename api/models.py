@@ -1,7 +1,8 @@
+from django.conf import settings
 from django.db import models
-from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 
 
 class SensorData(models.Model):
@@ -27,7 +28,11 @@ class EmailVerificationToken(models.Model):
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
     name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
     age = models.PositiveIntegerField(null=True, blank=True)
@@ -40,10 +45,14 @@ class Profile(models.Model):
         return f"Profile for {self.user.username}"
 
 
-# Auto-create profile whenever the user is created
+# ✅ SAFE profile creation signal (NO admin login crash)
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
+    """
+    Ensures every User always has a Profile.
+    Prevents RelatedObjectDoesNotExist errors.
+    """
     if created:
         Profile.objects.create(user=instance)
     else:
-        instance.profile.save()
+        Profile.objects.get_or_create(user=instance)

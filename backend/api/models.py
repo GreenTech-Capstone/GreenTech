@@ -2,7 +2,6 @@ from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.apps import apps
 from django.contrib.auth.models import User
 
 
@@ -32,7 +31,7 @@ class Profile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='profile'
+        related_name="profile"
     )
     name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
@@ -46,23 +45,14 @@ class Profile(models.Model):
         return f"Profile for {self.user.username}"
 
 
-# FIXED — safe profile creation & update
-@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+# ✅ SAFE profile creation signal (NO admin login crash)
+@receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     """
-    Ensures each user always has a Profile.
-    Prevents the RelatedObjectDoesNotExist error.
+    Ensures every User always has a Profile.
+    Prevents RelatedObjectDoesNotExist errors.
     """
-
-    ProfileModel = apps.get_model('api', 'Profile')
-
     if created:
-        # Create profile for new users
-        ProfileModel.objects.get_or_create(user=instance)
-        return
-
-    # For other saves, ensure profile exists
-    try:
-        instance.profile.save()
-    except ProfileModel.DoesNotExist:
-        ProfileModel.objects.create(user=instance)
+        Profile.objects.create(user=instance)
+    else:
+        Profile.objects.get_or_create(user=instance)
