@@ -56,7 +56,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
 
-    'api.apps.ApiConfig',
+    'api',
 ]
 
 SITE_ID = 1
