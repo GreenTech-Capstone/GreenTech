@@ -21,5 +21,4 @@ class NoCsrfAccountAdapter(DefaultAccountAdapter):
             raise ValidationError(
                 "Email is invalid. Please provide a valid email."
             )
-
         return email

@@ -1,13 +1,29 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from .models import SensorData, Profile
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(write_only=True, required=True)
+
     class Meta:
         model = User
         fields = ('username', 'email', 'password')
-        extra_kwargs = {'password': {'write_only': True}}
+
+    def validate_email(self, value):
+        # Validate proper email format
+        try:
+            validate_email(value)
+        except ValidationError:
+            raise serializers.ValidationError(
+                "Email is invalid. Please provide a valid email."
+            )
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email already in use.")
+        return value
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -15,6 +31,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             email=validated_data['email'],
             password=validated_data['password']
         )
+        user.is_active = False  # User must verify email
+        user.save()
         return user
 
 
